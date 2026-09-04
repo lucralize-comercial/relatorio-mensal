@@ -603,7 +603,7 @@ function buildDots(n){
   for(let i=0;i<n;i++){ const b=document.createElement('button'); b.className='dot'+(i===0?' active':''); b.onclick=()=>goToSlide(i); dots.appendChild(b); }
 }
 function goToSlide(i){
-  const slides = document.querySelectorAll('.slide');
+  const slides = document.querySelectorAll('#slides .slide');
   slideIndex = Math.max(0, Math.min(i, slides.length-1));
   slides.forEach((s,idx)=>s.classList.toggle('active', idx===slideIndex));
   document.querySelectorAll('.dot').forEach((d,idx)=>d.classList.toggle('active', idx===slideIndex));
