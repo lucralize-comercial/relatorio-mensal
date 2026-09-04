@@ -39,11 +39,6 @@
   .btn.primary{ background:var(--coral); border-color:var(--coral); color:#fff; }
   #status{ font-size:12px; color:var(--ink-3); margin-right:4px; }
 
-  .login-wrap{ display:flex; align-items:center; justify-content:center; min-height:80vh; flex-direction:column; gap:18px; text-align:center; padding:20px; }
-  .login-wrap h1{ font-size:24px; margin:0; color:var(--teal); }
-  .login-wrap p{ color:var(--ink-2); font-size:14px; max-width:360px; margin:0; }
-  .login-err{ color:var(--danger); font-size:13px; }
-
   .stage-wrap{ max-width:960px; margin:28px auto; padding:0 20px 40px; }
   .slide{ min-height:520px; padding:48px 8px; display:none; flex-direction:column; }
   .slide.active{ display:flex; }
@@ -101,14 +96,7 @@
 </head>
 <body>
 
-<div id="loginScreen" class="login-wrap">
-  <h1>Comercial · Resultados mensais</h1>
-  <p>Entre com sua conta Microsoft para carregar os dados do Agendor e do SharePoint.</p>
-  <button class="btn primary" id="loginBtn">Entrar com Microsoft</button>
-  <p class="login-err" id="loginErr"></p>
-</div>
-
-<div id="app" style="display:none">
+<div id="app">
   <div class="topbar">
     <div class="brand">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round"><path d="M6 20 L6 8 M10 20 L10 5 M14 20 L14 10 L6 18"/></svg>
@@ -119,9 +107,8 @@
     <div class="topbar-right">
       <span id="status">carregando…</span>
       <select id="monthSelect"></select>
-      <button class="btn" id="refreshBtn" title="Força nova busca no Agendor (pode levar 1-2 min)">Atualizar dados</button>
+      <button class="btn" id="refreshBtn" title="Força nova busca no Agendor e no SharePoint (pode levar 1-2 min)">Atualizar dados</button>
       <button class="btn" id="printBtn">Exportar PDF</button>
-      <button class="btn" id="logoutBtn">Sair</button>
     </div>
   </div>
 
@@ -138,63 +125,14 @@
 <script>
 // ===================== CONFIG =====================
 const PROXY = 'https://dashboard-proxy-production-ebff.up.railway.app';
-const CONFIG = {
-  clientId: 'c0868f3b-764c-4c5b-a9fc-4af4b6eb0baf',
-  tenantId: '5173aa83-66e1-49f3-9128-f2251b43294d',
-  redirectUri: 'https://lucralize-comercial.github.io/relatorio-mensal/',
-  contabilidade: { siteUrl:'lucralize.sharepoint.com:/', listName:'Controle de Clientes' },
-  tech: { siteUrl:'lucralize.sharepoint.com:/sites/LUCRALIZETECH', listName:'Base de Usuários' }
-};
-const AUTHORITY = `https://login.microsoftonline.com/${CONFIG.tenantId}`;
-const SCOPES = ['https://graph.microsoft.com/Sites.Read.All','https://graph.microsoft.com/User.Read'];
 const META_TRIMESTRE = { 1: 525, 2: 600, 3: 675, 4: 750 };
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const FUNIS_LEAD = ['Funil Comercial'];
 
-let accessToken = null;
 let DEALS = [];
 let rawContab = [], rawTech = [];
 let selectedMonthKey = null;
 let slideIndex = 0;
-
-// ===================== AUTH (PKCE, mesmo padrão do Gestão Comercial) =====================
-function generateVerifier(){ const a=new Uint8Array(32); crypto.getRandomValues(a); return btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,''); }
-async function generateChallenge(v){ const d=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)); return btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,''); }
-async function signIn(){
-  const v=generateVerifier(), c=await generateChallenge(v), s=btoa(Math.random().toString());
-  sessionStorage.setItem('pkce_v', v); sessionStorage.setItem('oauth_s', s);
-  const p=new URLSearchParams({ client_id:CONFIG.clientId, response_type:'code', redirect_uri:CONFIG.redirectUri, response_mode:'fragment', scope:SCOPES.join(' '), state:s, code_challenge:c, code_challenge_method:'S256' });
-  window.location.href = `${AUTHORITY}/oauth2/v2.0/authorize?${p}`;
-}
-function signOut(){
-  accessToken=null; sessionStorage.clear(); localStorage.removeItem('at'); localStorage.removeItem('at_exp');
-  window.location.href = `${AUTHORITY}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(CONFIG.redirectUri)}`;
-}
-async function exchangeCode(code){
-  const body=new URLSearchParams({ client_id:CONFIG.clientId, grant_type:'authorization_code', code, redirect_uri:CONFIG.redirectUri, code_verifier:sessionStorage.getItem('pkce_v') });
-  const r=await fetch(`${AUTHORITY}/oauth2/v2.0/token`, { method:'POST', body, headers:{'Content-Type':'application/x-www-form-urlencoded'} });
-  const d=await r.json();
-  if(d.error) throw new Error(d.error_description);
-  return d;
-}
-function showLoginErr(msg){ document.getElementById('loginErr').textContent = msg || ''; }
-
-// ===================== GRAPH =====================
-async function graphGet(url){
-  const r = await fetch(`https://graph.microsoft.com/v1.0${url}`, { headers:{ Authorization:`Bearer ${accessToken}` } });
-  if(!r.ok) throw new Error(`Graph API error: ${r.status} ${url}`);
-  return r.json();
-}
-async function getSiteId(siteUrl){ return (await graphGet(`/sites/${siteUrl}`)).id; }
-async function getListItems(siteId, listName){
-  let items=[], url=`/sites/${siteId}/lists/${encodeURIComponent(listName)}/items?expand=fields&$top=999`;
-  while(url){
-    const d = await graphGet(url);
-    items = items.concat(d.value||[]);
-    url = d['@odata.nextLink'] ? d['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0','') : null;
-  }
-  return items.map(i=>i.fields||{});
-}
 
 // ===================== FIELD HELPERS (mesmos do Gestão Comercial) =====================
 function fv(r,...keys){ for(const k of keys) if(r[k]!==undefined && r[k]!==null && r[k]!=='') return String(r[k]); return ''; }
@@ -213,48 +151,17 @@ function quarterOf(monthIdx){ return Math.floor(monthIdx/3)+1; }
 function fmtBRL(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}); }
 
 // ===================== BOOT =====================
-async function boot(){
-  const hash = new URLSearchParams(window.location.hash.slice(1));
-  if(hash.get('code')){
-    try{
-      const tok = await exchangeCode(hash.get('code'));
-      accessToken = tok.access_token;
-      localStorage.setItem('at', tok.access_token);
-      localStorage.setItem('at_exp', String(Date.now() + (tok.expires_in||3600)*1000));
-      history.replaceState(null, '', window.location.pathname);
-    }catch(e){
-      showLoginErr('Erro no login: ' + e.message);
-      return;
-    }
-  } else {
-    const exp = parseInt(localStorage.getItem('at_exp')||'0');
-    if(Date.now() < exp) accessToken = localStorage.getItem('at');
-  }
-
-  if(!accessToken){
-    document.getElementById('loginScreen').style.display='flex';
-    document.getElementById('app').style.display='none';
-    return;
-  }
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('app').style.display='block';
-  loadData();
-}
-
 async function loadData(){
   document.getElementById('status').textContent = 'carregando…';
   try{
-    const [dealsRes, sIdC, sIdT] = await Promise.all([
+    const [dealsRes, clientesRes] = await Promise.all([
       fetch(PROXY + '/deals').then(r=>r.json()).catch(()=>({data:[]})),
-      getSiteId(CONFIG.contabilidade.siteUrl),
-      getSiteId(CONFIG.tech.siteUrl)
+      fetch(PROXY + '/clientes').then(r=>r.json())
     ]);
     DEALS = dealsRes.data || [];
-    [rawContab, rawTech] = await Promise.all([
-      getListItems(sIdC, CONFIG.contabilidade.listName),
-      getListItems(sIdT, CONFIG.tech.listName)
-    ]);
-    document.getElementById('status').textContent = 'atualizado ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    rawContab = clientesRes.contabilidade || [];
+    rawTech = clientesRes.tech || [];
+    document.getElementById('status').textContent = clientesRes.updated_at ? ('atualizado ' + new Date(clientesRes.updated_at).toLocaleString('pt-BR')) : 'sem dados ainda — clique em Atualizar';
     buildMonthOptions();
     render();
   }catch(e){
@@ -474,20 +381,21 @@ function goToSlide(i){
   document.getElementById('nextBtn').disabled = slideIndex===slides.length-1;
 }
 
-document.getElementById('loginBtn').addEventListener('click', signIn);
-document.getElementById('logoutBtn').addEventListener('click', signOut);
 document.getElementById('monthSelect').addEventListener('change', e=>{ selectedMonthKey = e.target.value; render(); });
 document.getElementById('prevBtn').addEventListener('click', ()=>goToSlide(slideIndex-1));
 document.getElementById('nextBtn').addEventListener('click', ()=>goToSlide(slideIndex+1));
 document.getElementById('printBtn').addEventListener('click', ()=>window.print());
 document.getElementById('refreshBtn').addEventListener('click', async ()=>{
   document.getElementById('status').textContent = 'atualizando…';
-  await fetch(PROXY + '/refresh', {method:'POST'}).catch(()=>{});
+  await Promise.all([
+    fetch(PROXY + '/refresh', {method:'POST'}).catch(()=>{}),
+    fetch(PROXY + '/clientes/refresh', {method:'POST'}).catch(()=>{})
+  ]);
   setTimeout(loadData, 15000);
 });
 document.addEventListener('keydown', e=>{ if(e.key==='ArrowRight') goToSlide(slideIndex+1); if(e.key==='ArrowLeft') goToSlide(slideIndex-1); });
 
-boot();
+loadData();
 </script>
 </body>
 </html>
