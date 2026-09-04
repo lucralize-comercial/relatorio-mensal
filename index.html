@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lucralize · Resultados Comercial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#F72642;
+    --coral-dark:#B01A2E;
+    --teal:#92DCE5;
+    --teal-dark:#2C8A96;
+    --ink:#14181C;
+    --ink-2:#5B6470;
+    --ink-3:#8B939C;
+    --bg:#FFFFFF;
+    --bg-alt:#F5F7F8;
+    --line:#E4E8EB;
+    --success:#1D9E75;
+    --danger:#F72642;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:var(--bg-alt);
+  }
+  h1,h2,h3,.num{ font-family:'Manrope',sans-serif; }
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px; background:var(--bg); border-bottom:1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand svg{ height:22px; }
+  .brand span{ font-size:13px; color:var(--ink-2); font-weight:500; }
+  .topbar-right{ display:flex; align-items:center; gap:10px; }
+  select, .btn{
+    font-family:'Inter',sans-serif;
+    font-size:13px; font-weight:500;
+    border:1px solid var(--line); background:var(--bg);
+    border-radius:8px; padding:8px 12px; color:var(--ink);
+    cursor:pointer;
+  }
+  .btn:hover{ background:var(--bg-alt); }
+  .btn:disabled{ opacity:.4; cursor:default; }
+  #status{ font-size:12px; color:var(--ink-3); margin-right:4px; }
+
+  /* ---------- stage ---------- */
+  .stage-wrap{
+    max-width:920px; margin:28px auto; padding:0 20px 40px;
+  }
+  .slide{
+    background:var(--bg); border-radius:var(--radius);
+    border:1px solid var(--line);
+    min-height:520px;
+    padding:48px 56px;
+    display:none;
+    flex-direction:column;
+  }
+  .slide.active{ display:flex; }
+  .eyebrow{ font-size:13px; color:var(--ink-3); margin:0 0 6px; }
+  .slide h1{ font-size:28px; font-weight:700; margin:0 0 8px; }
+  .slide .lede{ font-size:15px; color:var(--ink-2); margin:0 0 28px; max-width:560px; line-height:1.55; }
+  .slide-body{ flex:1; }
+  .slide-footnote{ font-size:12px; color:var(--ink-3); margin-top:auto; padding-top:20px; border-top:1px solid var(--line); }
+
+  /* kpi grid */
+  .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:8px; }
+  .kpi{ background:var(--bg-alt); border-radius:10px; padding:16px 18px; }
+  .kpi .label{ font-size:12.5px; color:var(--ink-2); margin:0 0 6px; }
+  .kpi .num{ font-size:26px; font-weight:800; margin:0; }
+  .kpi .num.up{ color:var(--success); }
+  .kpi .num.down{ color:var(--danger); }
+  .kpi .sub{ font-size:12px; color:var(--ink-3); margin:4px 0 0; }
+
+  /* table */
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th,td{ text-align:right; padding:8px 10px; border-bottom:1px solid var(--line); }
+  th:first-child, td:first-child{ text-align:left; }
+  thead th{ color:var(--ink-2); font-weight:500; font-size:12px; }
+  tbody tr:last-child{ font-weight:700; }
+
+  /* month rows */
+  .month-row{ display:flex; align-items:center; gap:16px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .month-row:last-child{ border-bottom:none; }
+  .month-row .saldo{ width:64px; font-weight:800; font-size:16px; }
+  .month-row .name{ width:110px; font-weight:500; }
+  .month-row .detail{ font-size:12.5px; color:var(--ink-2); }
+
+  /* meta bar */
+  .bar-track{ height:10px; background:var(--bg-alt); border-radius:6px; overflow:hidden; margin-top:8px; }
+  .bar-fill{ height:100%; background:var(--teal-dark); border-radius:6px; }
+
+  /* nav */
+  .nav{ display:flex; align-items:center; justify-content:center; gap:18px; margin-top:18px; }
+  .dots{ display:flex; gap:7px; }
+  .dot{ width:7px; height:7px; border-radius:50%; background:var(--line); cursor:pointer; border:none; padding:0; }
+  .dot.active{ background:var(--ink); }
+  .nav .btn{ width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+
+  .note{ font-size:12.5px; color:var(--ink-3); background:var(--bg-alt); border-radius:8px; padding:10px 14px; margin-top:14px; }
+  .placeholder-input{ width:90px; border:1px solid var(--line); border-radius:6px; padding:4px 6px; font-size:15px; font-weight:700; font-family:'Manrope',sans-serif; text-align:center; }
+
+  @media print{
+    .topbar, .nav{ display:none !important; }
+    body{ background:#fff; }
+    .stage-wrap{ margin:0; padding:0; max-width:none; }
+    .slide{ display:none !important; border:none; min-height:0; page-break-after:always; }
+    .slide.active{ display:flex !important; }
+  }
+  @media (max-width:640px){
+    .slide{ padding:28px 22px; }
+    .topbar{ padding:12px 16px; flex-wrap:wrap; gap:10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--coral)" stroke-width="2"><path d="M4 20 L4 8 M8 20 L8 5 M12 20 L12 10 L4 18"/></svg>
+    <span>Comercial · Resultados mensais</span>
+  </div>
+  <div class="topbar-right">
+    <span id="status">carregando…</span>
+    <select id="monthSelect"></select>
+    <button class="btn" id="refreshBtn" title="Força nova busca no Agendor (pode levar 1-2 min)">Atualizar dados</button>
+    <button class="btn" id="printBtn">Exportar PDF</button>
+  </div>
+</div>
+
+<div class="stage-wrap">
+  <div id="slides"></div>
+  <div class="nav">
+    <button class="btn" id="prevBtn">←</button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="nextBtn">→</button>
+  </div>
+</div>
+
+<script>
+const PROXY = 'https://dashboard-proxy-production-ebff.up.railway.app';
+const FUNIS_VENDA = ['Funil Comercial', 'Reativação de base', 'Reativação'];
+const META_TRIMESTRE = { 1: 525, 2: 600, 3: 675, 4: 750 };
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+let DEALS = [];
+let ATIVIDADES = [];
+let selectedMonthKey = null; // 'YYYY-MM'
+let slideIndex = 0;
+const manualInputs = {}; // clientes ativos / ticket médio / empresas impactadas por mês (não vêm do Agendor)
+
+function monthKey(dateStr){
+  if(!dateStr) return null;
+  return dateStr.slice(0,7);
+}
+function fmtMonthLabel(key){
+  const [y,m] = key.split('-');
+  return MESES[parseInt(m,10)-1] + ' ' + y;
+}
+function quarterOf(monthIdx){ return Math.floor(monthIdx/3)+1; }
+
+async function loadData(){
+  document.getElementById('status').textContent = 'carregando…';
+  try{
+    const [dealsRes, ativRes] = await Promise.all([
+      fetch(PROXY + '/deals').then(r=>r.json()),
+      fetch(PROXY + '/atividades-historico').then(r=>r.json()).catch(()=>({data:[]}))
+    ]);
+    DEALS = dealsRes.data || [];
+    ATIVIDADES = ativRes.data || [];
+    const updated = dealsRes.meta && dealsRes.meta.updated_at;
+    document.getElementById('status').textContent = updated ? ('atualizado ' + new Date(updated).toLocaleString('pt-BR')) : '';
+    buildMonthOptions();
+    render();
+  }catch(e){
+    document.getElementById('status').textContent = 'erro ao carregar — confira o console';
+    console.error(e);
+  }
+}
+
+function buildMonthOptions(){
+  const keys = new Set();
+  DEALS.forEach(d=>{
+    if(d.wonAt) keys.add(monthKey(d.wonAt));
+    if(d.lostAt) keys.add(monthKey(d.lostAt));
+    if(d.createdAt) keys.add(monthKey(d.createdAt));
+  });
+  const sorted = Array.from(keys).filter(Boolean).sort().reverse();
+  const sel = document.getElementById('monthSelect');
+  sel.innerHTML = '';
+  sorted.forEach(k=>{
+    const opt = document.createElement('option');
+    opt.value = k; opt.textContent = fmtMonthLabel(k);
+    sel.appendChild(opt);
+  });
+  if(!selectedMonthKey || !sorted.includes(selectedMonthKey)){
+    selectedMonthKey = sorted[0];
+  }
+  sel.value = selectedMonthKey;
+}
+
+// ---------- agregações ----------
+function isVendaFunil(d){
+  const fn = d.funnel && d.funnel.name;
+  return FUNIS_VENDA.some(f => (fn||'').toLowerCase().includes(f.toLowerCase()));
+}
+function monthlyEntradasSaidas(){
+  // { 'YYYY-MM': {entradas, saidas} }
+  const out = {};
+  DEALS.forEach(d=>{
+    if(!isVendaFunil(d)) return;
+    if(d.wonAt){
+      const k = monthKey(d.wonAt);
+      out[k] = out[k] || {entradas:0, saidas:0};
+      out[k].entradas++;
+    }
+    if(d.lostAt){
+      const k = monthKey(d.lostAt);
+      out[k] = out[k] || {entradas:0, saidas:0};
+      out[k].saidas++;
+    }
+  });
+  return out;
+}
+function produtoNoMes(monthK){
+  // usa products_entities (só anexado a ganhos dos últimos 180 dias pelo backend)
+  let tech=0, pmes=0, outros=0;
+  DEALS.forEach(d=>{
+    if(!isVendaFunil(d) || !d.wonAt || monthKey(d.wonAt)!==monthK) return;
+    const prods = d.products_entities || [];
+    if(prods.length===0){ outros++; return; }
+    const nomes = prods.map(p=>(p.name||p.title||'').toLowerCase()).join(' ');
+    if(nomes.includes('tech')) tech++;
+    else pmes++;
+  });
+  return {tech, pmes, outros};
+}
+function funilLeadsNoMes(monthK){
+  let leads=0, fechamentos=0;
+  DEALS.forEach(d=>{
+    if((d.funnel && d.funnel.name || '').toLowerCase().includes('comercial')){
+      if(monthKey(d.createdAt)===monthK) leads++;
+      if(d.wonAt && monthKey(d.wonAt)===monthK) fechamentos++;
+    }
+  });
+  return {leads, fechamentos, conversao: leads ? (fechamentos/leads*100) : 0};
+}
+
+// ---------- render ----------
+function render(){
+  const agg = monthlyEntradasSaidas();
+  const allKeys = Object.keys(agg).sort();
+  const idx = allKeys.indexOf(selectedMonthKey);
+  const prevKey = idx>0 ? allKeys[idx-1] : null;
+  const cur = agg[selectedMonthKey] || {entradas:0, saidas:0};
+  const prev = prevKey ? agg[prevKey] : null;
+  const saldo = cur.entradas - cur.saidas;
+  const [y,m] = selectedMonthKey.split('-');
+  const monthIdx = parseInt(m,10)-1;
+  const trimestre = quarterOf(monthIdx);
+
+  const prod = produtoNoMes(selectedMonthKey);
+  const totalProd = prod.tech+prod.pmes+prod.outros || 1;
+
+  const funil = funilLeadsNoMes(selectedMonthKey);
+
+  // saldo acumulado no ano até o mês selecionado (aproxima "base de clientes" variação, não o total)
+  let saldoAcumuladoAno = 0;
+  allKeys.filter(k=>k.startsWith(y) && k<=selectedMonthKey).forEach(k=>{
+    saldoAcumuladoAno += (agg[k].entradas - agg[k].saidas);
+  });
+
+  const slidesHtml = [];
+
+  // Slide 1 — capa
+  slidesHtml.push(`
+    <div class="eyebrow">COMERCIAL</div>
+    <h1>Resultados ${fmtMonthLabel(selectedMonthKey)}</h1>
+    <p class="lede">${trimestre}º trimestre de ${y}</p>
+  `);
+
+  // Slide 2 — o que aconteceu
+  slidesHtml.push(`
+    <div class="eyebrow">Slide 2</div>
+    <h1>O que aconteceu em ${MESES[monthIdx]}</h1>
+    <p class="lede">Comparativo com ${prevKey ? fmtMonthLabel(prevKey) : 'o mês anterior'}.</p>
+    <div class="slide-body">
+      <div class="kpis">
+        <div class="kpi"><p class="label">Novos clientes</p><p class="num up">+${cur.entradas}</p>${prev?`<p class="sub">${prevKey.slice(5)}: ${prev.entradas}</p>`:''}</div>
+        <div class="kpi"><p class="label">Saídas</p><p class="num down">-${cur.saidas}</p>${prev?`<p class="sub">${prevKey.slice(5)}: ${prev.saidas}</p>`:''}</div>
+        <div class="kpi"><p class="label">Saldo do mês</p><p class="num">${saldo>=0?'+':''}${saldo}</p></div>
+      </div>
+      <div class="note">Mix de produto (contratos ganhos, quando disponível): ${prod.tech} Tech, ${prod.pmes} PMEs${prod.outros?`, ${prod.outros} sem produto identificado`:''}.</div>
+    </div>
+  `);
+
+  // Slide 3 — vendas por produto no semestre
+  const semestreKeys = allKeys.filter(k=>k.startsWith(y)).slice(-6);
+  let rowTech='<tr><td>Lucralize Tech</td>', rowPmes='<tr><td>Contabilidade PMEs</td>', rowTotal='<tr><td>Total</td>';
+  let totTech=0, totPmes=0;
+  semestreKeys.forEach(k=>{
+    const p = produtoNoMes(k);
+    totTech+=p.tech; totPmes+=p.pmes;
+    rowTech+=`<td>${p.tech}</td>`; rowPmes+=`<td>${p.pmes}</td>`; rowTotal+=`<td>${p.tech+p.pmes}</td>`;
+  });
+  rowTech+=`<td>${totTech}</td></tr>`; rowPmes+=`<td>${totPmes}</td></tr>`; rowTotal+=`<td>${totTech+totPmes}</td></tr>`;
+  slidesHtml.push(`
+    <div class="eyebrow">Slide 3</div>
+    <h1>Vendas por produto no semestre</h1>
+    <p class="lede">Contratos ganhos por mês, pela data de fechamento no CRM.</p>
+    <div class="slide-body">
+      <table>
+        <thead><tr><th>Produto</th>${semestreKeys.map(k=>`<th>${MESES[parseInt(k.slice(5),10)-1].slice(0,3)}</th>`).join('')}<th>Total</th></tr></thead>
+        <tbody>${rowTech}${rowPmes}${rowTotal}</tbody>
+      </table>
+      <div class="note">Considera ${FUNIS_VENDA.join(', ')}. Mix de produto usa dados de produto anexados apenas a ganhos dos últimos ~180 dias — meses mais antigos podem aparecer zerados.</div>
+    </div>
+  `);
+
+  // Slide 4 — como estamos (dados que não vêm do Agendor: precisa input manual)
+  manualInputs[selectedMonthKey] = manualInputs[selectedMonthKey] || {ativos:'', ticket:'', empresas:''};
+  const mi = manualInputs[selectedMonthKey];
+  slidesHtml.push(`
+    <div class="eyebrow">Slide 4</div>
+    <h1>Como estamos em ${y}</h1>
+    <p class="lede">Clientes ativos, ticket médio e empresas impactadas não vêm do Agendor — confirme os números abaixo (ficam salvos só nesta sessão).</p>
+    <div class="slide-body">
+      <div class="kpis">
+        <div class="kpi"><p class="label">Clientes ativos</p><input class="placeholder-input" data-field="ativos" value="${mi.ativos}" placeholder="—"></div>
+        <div class="kpi"><p class="label">Ticket médio</p><input class="placeholder-input" data-field="ticket" value="${mi.ticket}" placeholder="R$ —"></div>
+        <div class="kpi"><p class="label">Empresas impactadas</p><input class="placeholder-input" data-field="empresas" value="${mi.empresas}" placeholder="—"></div>
+      </div>
+    </div>
+    <div class="slide-footnote">Fonte sugerida: base de faturamento/MRR no SharePoint (fora do escopo do dashboard-proxy hoje).</div>
+  `);
+
+  // Slide 5 — clientes mês a mês
+  const anoKeys = allKeys.filter(k=>k.startsWith(y));
+  const monthRows = anoKeys.map(k=>{
+    const a = agg[k];
+    const s = a.entradas-a.saidas;
+    return `<div class="month-row"><div class="saldo" style="color:${s>=0?'var(--success)':'var(--danger)'}">${s>=0?'+':''}${s}</div><div class="name">${MESES[parseInt(k.slice(5),10)-1]}</div><div class="detail">${a.entradas} entradas e ${a.saidas} saídas</div></div>`;
+  }).join('');
+  slidesHtml.push(`
+    <div class="eyebrow">Slide 5</div>
+    <h1>Clientes mês a mês em ${y}</h1>
+    <p class="lede">O saldo de cada mês, com entradas e saídas lado a lado.</p>
+    <div class="slide-body">${monthRows || '<p class="note">Sem dados suficientes ainda.</p>'}</div>
+  `);
+
+  // Slide 6 — funil de leads
+  slidesHtml.push(`
+    <div class="eyebrow">Slide 6</div>
+    <h1>Funil de leads em ${MESES[monthIdx]}</h1>
+    <p class="lede">Funil Comercial — volume e conversão do mês.</p>
+    <div class="slide-body">
+      <div class="kpis">
+        <div class="kpi"><p class="label">Leads no mês</p><p class="num">${funil.leads}</p></div>
+        <div class="kpi"><p class="label">Fechamentos</p><p class="num">${funil.fechamentos}</p></div>
+        <div class="kpi"><p class="label">Conversão</p><p class="num">${funil.conversao.toFixed(1)}%</p></div>
+      </div>
+      <div class="note">Origem do lead, motivo de perda e reuniões agendadas pelo Luca dependem de campos customizados que ainda preciso confirmar com você (nomes exatos no Agendor) antes de calcular automaticamente.</div>
+    </div>
+  `);
+
+  // Slide 7 — meta 2026
+  const pctAno = (saldoAcumuladoAno / 750 * 100);
+  slidesHtml.push(`
+    <div class="eyebrow">Slide 7</div>
+    <h1>A meta 2026 em números</h1>
+    <p class="lede">750 clientes ativos até dezembro (meta fixa, racionada por trimestre).</p>
+    <div class="slide-body">
+      <div class="kpis">
+        <div class="kpi"><p class="label">Saldo no ano até ${MESES[monthIdx]}</p><p class="num">+${saldoAcumuladoAno}</p></div>
+        <div class="kpi"><p class="label">Meta de dezembro</p><p class="num">750</p></div>
+        <div class="kpi"><p class="label">% do ritmo necessário</p><p class="num">${pctAno.toFixed(0)}%</p></div>
+      </div>
+      <div class="note">Esse saldo é a variação líquida de contratos no Agendor, não a base total de clientes ativos (que depende do input manual do slide 4).</div>
+    </div>
+  `);
+
+  // Slide 8 — meta vs realizado vs gap (checkpoints fixos)
+  let metaRows = '';
+  [1,2,3,4].forEach(q=>{
+    const status = q<trimestre ? 'fechado' : (q===trimestre ? 'em andamento' : '');
+    metaRows += `<tr><td>${q}º trimestre ${status?`(${status})`:''}</td><td>${META_TRIMESTRE[q]}</td></tr>`;
+  });
+  slidesHtml.push(`
+    <div class="eyebrow">Slide 8</div>
+    <h1>Meta vs. realizado vs. GAP</h1>
+    <p class="lede">Checkpoints trimestrais fixos da premiação (525 / 600 / 675 / 750).</p>
+    <div class="slide-body">
+      <table><thead><tr><th>Trimestre</th><th>Meta (faixa 1)</th></tr></thead><tbody>${metaRows}</tbody></table>
+      <div class="note">A coluna "base de clientes" depende do total de clientes ativos (slide 4, input manual) — não incluída aqui até esse dado ter uma fonte automática.</div>
+    </div>
+  `);
+
+  document.getElementById('slides').innerHTML = slidesHtml.map((h,i)=>`<div class="slide${i===0?' active':''}" data-i="${i}">${h}</div>`).join('');
+
+  buildDots(slidesHtml.length);
+  bindManualInputs();
+  goToSlide(0);
+}
+
+function buildDots(n){
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  for(let i=0;i<n;i++){
+    const b = document.createElement('button');
+    b.className = 'dot'+(i===0?' active':'');
+    b.onclick = ()=>goToSlide(i);
+    dots.appendChild(b);
+  }
+}
+function goToSlide(i){
+  const slides = document.querySelectorAll('.slide');
+  slideIndex = Math.max(0, Math.min(i, slides.length-1));
+  slides.forEach((s,idx)=>s.classList.toggle('active', idx===slideIndex));
+  document.querySelectorAll('.dot').forEach((d,idx)=>d.classList.toggle('active', idx===slideIndex));
+  document.getElementById('prevBtn').disabled = slideIndex===0;
+  document.getElementById('nextBtn').disabled = slideIndex===slides.length-1;
+}
+function bindManualInputs(){
+  document.querySelectorAll('.placeholder-input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      manualInputs[selectedMonthKey] = manualInputs[selectedMonthKey] || {};
+      manualInputs[selectedMonthKey][inp.dataset.field] = inp.value;
+    });
+  });
+}
+
+document.getElementById('monthSelect').addEventListener('change', e=>{
+  selectedMonthKey = e.target.value;
+  render();
+});
+document.getElementById('prevBtn').addEventListener('click', ()=>goToSlide(slideIndex-1));
+document.getElementById('nextBtn').addEventListener('click', ()=>goToSlide(slideIndex+1));
+document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+document.getElementById('refreshBtn').addEventListener('click', async ()=>{
+  document.getElementById('status').textContent = 'atualizando…';
+  await fetch(PROXY + '/refresh', {method:'POST'}).catch(()=>{});
+  setTimeout(loadData, 15000);
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goToSlide(slideIndex+1);
+  if(e.key==='ArrowLeft') goToSlide(slideIndex-1);
+});
+
+loadData();
+</script>
+</body>
+</html>
