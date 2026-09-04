@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <style>
   :root{
     --coral:#F72642; --coral-dark:#8E1C41;
@@ -80,10 +81,24 @@
 
   .note{ font-size:12.5px; color:var(--ink-3); background:rgba(255,255,255,.06); border-radius:8px; padding:10px 14px; margin-top:14px; }
 
+  .slide-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .slide-thumb{ background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:14px; padding:26px; cursor:pointer; transition:background .15s ease, transform .15s ease; text-align:left; }
+  .slide-thumb:hover{ background:rgba(255,255,255,.09); transform:translateY(-2px); }
+  .slide-thumb .eyebrow{ margin-bottom:8px; }
+  .slide-thumb h2{ font-size:19px; margin:0 0 8px; color:var(--teal); font-family:'Manrope',sans-serif; font-weight:500; }
+  .slide-thumb p{ font-size:13px; color:var(--ink-2); margin:0; line-height:1.5; }
+
+  .single-toolbar{ display:flex; margin-bottom:8px; }
+
+  body.fullscreen-mode .topbar{ display:none; }
+  body.fullscreen-mode .stage-wrap{ max-width:none; margin:0; padding:40px; min-height:100vh; display:flex; flex-direction:column; justify-content:center; }
+  body.fullscreen-mode .single-toolbar{ display:none; }
+
   @media print{
-    .topbar, .nav{ display:none !important; }
+    .topbar, .nav, .slide-grid, .single-toolbar{ display:none !important; }
     body{ background:var(--navy) !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     .stage-wrap{ margin:0; padding:0; max-width:none; }
+    #singleView{ display:block !important; }
     .slide{ display:none !important; min-height:0; page-break-after:always; }
     .slide.active{ display:flex !important; }
   }
@@ -91,6 +106,7 @@
     .slide{ padding:28px 4px; }
     .slide h1{ font-size:26px; }
     .topbar{ padding:12px 16px; flex-wrap:wrap; gap:10px; }
+    .slide-grid{ grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -108,16 +124,24 @@
       <span id="status">carregando…</span>
       <select id="monthSelect"></select>
       <button class="btn" id="refreshBtn" title="Força nova busca no Agendor e no SharePoint (pode levar 1-2 min)">Atualizar dados</button>
+      <button class="btn primary" id="presentBtn">▸ Apresentar</button>
       <button class="btn" id="printBtn">Exportar PDF</button>
+      <button class="btn" id="pptxBtn">Exportar PPTX</button>
     </div>
   </div>
 
   <div class="stage-wrap">
-    <div id="slides"></div>
-    <div class="nav">
-      <button class="btn" id="prevBtn">←</button>
-      <div class="dots" id="dots"></div>
-      <button class="btn" id="nextBtn">→</button>
+    <div id="slideGrid" class="slide-grid"></div>
+    <div id="singleView" style="display:none">
+      <div class="single-toolbar">
+        <button class="btn" id="backToGridBtn">← Voltar</button>
+      </div>
+      <div id="slides"></div>
+      <div class="nav">
+        <button class="btn" id="prevBtn">←</button>
+        <div class="dots" id="dots"></div>
+        <button class="btn" id="nextBtn">→</button>
+      </div>
     </div>
   </div>
 </div>
@@ -133,6 +157,7 @@ let DEALS = [];
 let rawContab = [], rawTech = [];
 let selectedMonthKey = null;
 let slideIndex = 0;
+let REPORT = null; // snapshot dos dados computados no último render(), usado pelo export PPTX
 
 // ===================== FIELD HELPERS (mesmos do Gestão Comercial) =====================
 function fv(r,...keys){ for(const k of keys) if(r[k]!==undefined && r[k]!==null && r[k]!=='') return String(r[k]); return ''; }
@@ -236,6 +261,19 @@ function render(){
 
   let saldoAcumuladoAno = 0;
   allKeys.filter(k=>k.startsWith(y) && k<=selectedMonthKey).forEach(k=>{ saldoAcumuladoAno += (agg[k].entradas - agg[k].saidas); });
+
+  const semestreKeysForExport = allKeys.filter(k=>k.startsWith(y)).slice(-6);
+  const anoKeysForExport = allKeys.filter(k=>k.startsWith(y));
+  const pctAnoForExport = (ativos.total / 750 * 100);
+
+  REPORT = {
+    y, monthIdx, trimestre, cur, prev, prevKey, saldo,
+    ativos, ativosPrev, funil, saldoAcumuladoAno, pctAno: pctAnoForExport,
+    semestreKeys: semestreKeysForExport,
+    anoKeys: anoKeysForExport,
+    agg,
+    monthLabel: fmtMonthLabel(selectedMonthKey)
+  };
 
   const slidesHtml = [];
 
@@ -364,7 +402,185 @@ function render(){
 
   document.getElementById('slides').innerHTML = slidesHtml.map((h,i)=>`<div class="slide${i===0?' active':''}" data-i="${i}">${h}</div>`).join('');
   buildDots(slidesHtml.length);
+  renderGrid(slidesHtml);
   goToSlide(0);
+}
+
+function renderGrid(slidesHtml){
+  const grid = document.getElementById('slideGrid');
+  grid.innerHTML = slidesHtml.map((h,i)=>{
+    const m = h.match(/<div class="eyebrow">(.*?)<\/div>\s*<h1>(.*?)<\/h1>(?:\s*<p class="lede">(.*?)<\/p>)?/s);
+    const eyebrow = m ? m[1] : `Slide ${i+1}`;
+    const title = m ? m[2] : '';
+    const lede = m && m[3] ? m[3] : '';
+    return `<button class="slide-thumb" data-i="${i}"><div class="eyebrow">${eyebrow}</div><h2>${title}</h2><p>${lede}</p></button>`;
+  }).join('');
+  grid.querySelectorAll('.slide-thumb').forEach(btn=>{
+    btn.addEventListener('click', ()=>openSingle(parseInt(btn.dataset.i,10), false));
+  });
+}
+
+let viewMode = 'grid';
+let isPresenting = false;
+
+function openSingle(i, fullscreen){
+  viewMode = 'single';
+  document.getElementById('slideGrid').style.display = 'none';
+  document.getElementById('singleView').style.display = 'block';
+  goToSlide(i);
+  if(fullscreen){
+    isPresenting = true;
+    document.body.classList.add('fullscreen-mode');
+    const el = document.documentElement;
+    (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+  }
+}
+function backToGrid(){
+  if(document.fullscreenElement) document.exitFullscreen();
+  document.body.classList.remove('fullscreen-mode');
+  isPresenting = false;
+  viewMode = 'grid';
+  document.getElementById('slideGrid').style.display = 'grid';
+  document.getElementById('singleView').style.display = 'none';
+}
+document.addEventListener('fullscreenchange', ()=>{
+  if(!document.fullscreenElement && isPresenting) backToGrid();
+});
+
+// ===================== EXPORT PPTX =====================
+async function exportPPTX(){
+  if(!REPORT){ return; }
+  const btn = document.getElementById('pptxBtn');
+  const originalText = btn.textContent;
+  btn.textContent = 'Gerando…'; btn.disabled = true;
+  try{
+    const R = REPORT;
+    const NAVY = '0E1428', TEAL = '92DCE5', CORAL = 'F72642', WHITE = 'FFFFFF', MUTED = 'AAB8C2', SUCCESS='4FD1A5', DANGER='F7566B';
+    const pptx = new PptxGenJS();
+    pptx.defineLayout({ name: 'LUCRALIZE', width: 10, height: 5.625 });
+    pptx.layout = 'LUCRALIZE';
+
+    function baseSlide(){
+      const s = pptx.addSlide();
+      s.background = { color: NAVY };
+      return s;
+    }
+    function header(s, eyebrow, title, lede){
+      s.addText(eyebrow.toUpperCase(), { x:0.5, y:0.35, w:9, h:0.3, fontSize:11, color:MUTED, fontFace:'Arial', charSpacing:1 });
+      s.addText(title, { x:0.5, y:0.62, w:9, h:0.6, fontSize:26, color:TEAL, bold:false, fontFace:'Arial' });
+      if(lede){
+        s.addText(lede, { x:0.5, y:1.18, w:8.5, h:0.5, fontSize:13, color:WHITE, fontFace:'Arial' });
+      }
+    }
+    function kpiRow(s, kpis, y){
+      const w = 9 / kpis.length;
+      kpis.forEach((k, i)=>{
+        const x = 0.5 + i*w;
+        s.addText(k.label, { x, y, w:w-0.2, h:0.3, fontSize:11, color:MUTED, fontFace:'Arial' });
+        s.addText(k.value, { x, y:y+0.3, w:w-0.2, h:0.55, fontSize:30, bold:true, color:k.color||WHITE, fontFace:'Arial' });
+        if(k.sub) s.addText(k.sub, { x, y:y+0.85, w:w-0.2, h:0.3, fontSize:10, color:MUTED, fontFace:'Arial' });
+      });
+    }
+    function tableSlide(s, y, rows, colWidths){
+      s.addTable(rows, { x:0.5, y, w:9, colW:colWidths, fontSize:10, fontFace:'Arial', color:'14181C',
+        fill:{color:WHITE}, border:{type:'solid', color:'E4E8EB', pt:0.5}, autoPage:false });
+    }
+
+    // Slide 1 — capa
+    let s = baseSlide();
+    s.addText('COMERCIAL', { x:0.5, y:2.1, w:9, h:0.3, fontSize:12, color:MUTED, fontFace:'Arial' });
+    s.addText(`Resultados ${R.monthLabel}`, { x:0.5, y:2.4, w:9, h:0.8, fontSize:40, color:WHITE, bold:true, fontFace:'Arial' });
+    s.addText(`${R.trimestre}º trimestre de ${R.y}`, { x:0.5, y:3.15, w:9, h:0.4, fontSize:15, color:TEAL, fontFace:'Arial' });
+
+    // Slide 2 — o que aconteceu
+    s = baseSlide();
+    header(s, 'Slide 2', `O que aconteceu em ${MESES[R.monthIdx]}`, `Comparativo com ${R.prevKey ? fmtMonthLabel(R.prevKey) : 'o mês anterior'}.`);
+    kpiRow(s, [
+      { label:'Novos clientes', value:`+${R.cur.entradas}`, color:SUCCESS, sub:R.prev?`${R.prevKey.slice(5)}: ${R.prev.entradas}`:'' },
+      { label:'Saídas', value:`-${R.cur.saidas}`, color:DANGER, sub:R.prev?`${R.prevKey.slice(5)}: ${R.prev.saidas}`:'' },
+      { label:'Saldo do mês', value:`${R.saldo>=0?'+':''}${R.saldo}` }
+    ], 2.0);
+    s.addText(`Mix de produto (fonte SharePoint): ${R.cur.tech} Tech, ${R.cur.pmes} PMEs.`, { x:0.5, y:3.6, w:9, h:0.4, fontSize:11, color:MUTED, fontFace:'Arial' });
+
+    // Slide 3 — vendas por produto no semestre
+    s = baseSlide();
+    header(s, 'Slide 3', 'Vendas por produto no semestre', 'Entradas por mês, listas "Controle de Clientes" e "Base de Usuários" (SharePoint).');
+    {
+      const head = [{text:'Produto', options:{bold:true, fill:{color:'F5F7F8'}}}].concat(
+        R.semestreKeys.map(k=>({text:MESES[parseInt(k.slice(5),10)-1].slice(0,3), options:{bold:true, fill:{color:'F5F7F8'}}}))
+      ).concat([{text:'Total', options:{bold:true, fill:{color:'F5F7F8'}}}]);
+      let totTech=0, totPmes=0;
+      const rowTech=['Lucralize Tech'], rowPmes=['Contabilidade PMEs'];
+      R.semestreKeys.forEach(k=>{ const a=R.agg[k]||{tech:0,pmes:0}; totTech+=a.tech; totPmes+=a.pmes; rowTech.push(String(a.tech)); rowPmes.push(String(a.pmes)); });
+      rowTech.push(String(totTech)); rowPmes.push(String(totPmes));
+      const rows = [head, rowTech, rowPmes];
+      tableSlide(s, 1.9, rows, [2].concat(R.semestreKeys.map(()=>1)).concat([1]));
+    }
+
+    // Slide 4 — como estamos
+    s = baseSlide();
+    header(s, 'Slide 4', `Como estamos em ${R.y}`, `Base de clientes ativos ao fim de ${MESES[R.monthIdx]}.`);
+    kpiRow(s, [
+      { label:'Clientes ativos', value:String(R.ativos.total), sub: R.ativosPrev?`${R.ativos.total-R.ativosPrev.total>=0?'+':''}${R.ativos.total-R.ativosPrev.total} vs mês anterior`:'' },
+      { label:'Tech / Contabilidade', value:`${R.ativos.tech} / ${R.ativos.contab}` },
+      { label:'MRR consolidado', value: fmtBRL(R.ativos.mrr) },
+      { label:'Ticket médio', value: fmtBRL(R.ativos.ticket) }
+    ], 2.0);
+
+    // Slide 5 — clientes mês a mês
+    s = baseSlide();
+    header(s, 'Slide 5', `Clientes mês a mês em ${R.y}`, 'O saldo de cada mês, com entradas e saídas lado a lado.');
+    {
+      const cols = 4;
+      R.anoKeys.forEach((k,i)=>{
+        const a = R.agg[k]; const sVal = a.entradas-a.saidas;
+        const col = i % cols, row = Math.floor(i/cols);
+        const x = 0.5 + col*2.25, y = 2.0 + row*1.15;
+        s.addText(`${sVal>=0?'+':''}${sVal}`, { x, y, w:2.0, h:0.5, fontSize:24, bold:true, color: sVal>=0?SUCCESS:DANGER, align:'center', fontFace:'Arial' });
+        s.addText(MESES[parseInt(k.slice(5),10)-1], { x, y:y+0.45, w:2.0, h:0.3, fontSize:12, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+        s.addText(`${a.entradas} ent. / ${a.saidas} saí.`, { x, y:y+0.7, w:2.0, h:0.3, fontSize:9, color:MUTED, align:'center', fontFace:'Arial' });
+      });
+    }
+
+    // Slide 6 — funil de leads
+    s = baseSlide();
+    header(s, 'Slide 6', `Funil de leads em ${MESES[R.monthIdx]}`, 'Funil Comercial no Agendor — volume e conversão do mês.');
+    kpiRow(s, [
+      { label:'Leads no mês', value:String(R.funil.leads) },
+      { label:'Fechamentos', value:String(R.funil.fechamentos) },
+      { label:'Conversão', value:`${R.funil.conversao.toFixed(1)}%` }
+    ], 2.0);
+
+    // Slide 7 — meta 2026
+    s = baseSlide();
+    header(s, 'Slide 7', 'A meta 2026 em números', '750 clientes ativos até dezembro (meta fixa, racionada por trimestre).');
+    kpiRow(s, [
+      { label:'Clientes ativos hoje', value:String(R.ativos.total) },
+      { label:'Meta de dezembro', value:'750' },
+      { label:'% da meta anual', value:`${R.pctAno.toFixed(0)}%` }
+    ], 2.0);
+
+    // Slide 8 — meta vs realizado vs gap
+    s = baseSlide();
+    header(s, 'Slide 8', 'Meta vs. realizado vs. GAP', 'Checkpoints trimestrais fixos da premiação (525 / 600 / 675 / 750).');
+    {
+      const head = [{text:'Trimestre',options:{bold:true,fill:{color:'F5F7F8'}}},{text:'Meta (faixa 1)',options:{bold:true,fill:{color:'F5F7F8'}}},{text:'Base de clientes',options:{bold:true,fill:{color:'F5F7F8'}}},{text:'GAP',options:{bold:true,fill:{color:'F5F7F8'}}}];
+      const rows = [head];
+      [1,2,3,4].forEach(q=>{
+        const status = q<R.trimestre ? ' (fechado)' : (q===R.trimestre ? ' (em andamento)' : '');
+        const gap = R.ativos.total - META_TRIMESTRE[q];
+        rows.push([`${q}º trimestre${status}`, String(META_TRIMESTRE[q]), String(R.ativos.total), `${gap>=0?'+':''}${gap}`]);
+      });
+      tableSlide(s, 1.9, rows, [3,2,2,2]);
+    }
+
+    await pptx.writeFile({ fileName: `Resultados_${R.monthLabel.replace(' ','_')}.pptx` });
+  }catch(e){
+    console.error(e);
+    alert('Erro ao gerar o PPTX — confira o console.');
+  }finally{
+    btn.textContent = originalText; btn.disabled = false;
+  }
 }
 
 function buildDots(n){
@@ -385,6 +601,9 @@ document.getElementById('monthSelect').addEventListener('change', e=>{ selectedM
 document.getElementById('prevBtn').addEventListener('click', ()=>goToSlide(slideIndex-1));
 document.getElementById('nextBtn').addEventListener('click', ()=>goToSlide(slideIndex+1));
 document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+document.getElementById('pptxBtn').addEventListener('click', exportPPTX);
+document.getElementById('presentBtn').addEventListener('click', ()=>openSingle(0, true));
+document.getElementById('backToGridBtn').addEventListener('click', backToGrid);
 document.getElementById('refreshBtn').addEventListener('click', async ()=>{
   document.getElementById('status').textContent = 'atualizando…';
   await Promise.all([
@@ -393,7 +612,12 @@ document.getElementById('refreshBtn').addEventListener('click', async ()=>{
   ]);
   setTimeout(loadData, 15000);
 });
-document.addEventListener('keydown', e=>{ if(e.key==='ArrowRight') goToSlide(slideIndex+1); if(e.key==='ArrowLeft') goToSlide(slideIndex-1); });
+document.addEventListener('keydown', e=>{
+  if(viewMode!=='single') return;
+  if(e.key==='ArrowRight') goToSlide(slideIndex+1);
+  if(e.key==='ArrowLeft') goToSlide(slideIndex-1);
+  if(e.key==='Escape' && !document.fullscreenElement) backToGrid();
+});
 
 loadData();
 </script>
