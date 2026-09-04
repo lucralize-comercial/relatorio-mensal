@@ -82,11 +82,11 @@
   .note{ font-size:12.5px; color:var(--ink-3); background:rgba(255,255,255,.06); border-radius:8px; padding:10px 14px; margin-top:14px; }
 
   .slide-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .slide-thumb{ background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:14px; padding:26px; cursor:pointer; transition:background .15s ease, transform .15s ease; text-align:left; }
-  .slide-thumb:hover{ background:rgba(255,255,255,.09); transform:translateY(-2px); }
-  .slide-thumb .eyebrow{ margin-bottom:8px; }
-  .slide-thumb h2{ font-size:19px; margin:0 0 8px; color:var(--teal); font-family:'Manrope',sans-serif; font-weight:500; }
-  .slide-thumb p{ font-size:13px; color:var(--ink-2); margin:0; line-height:1.5; }
+  .slide-thumb-wrap{ position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid var(--line); cursor:pointer; padding:0; background:var(--navy); transition:transform .15s ease, border-color .15s ease; display:block; }
+  .slide-thumb-wrap:hover{ transform:translateY(-3px); border-color:var(--teal); }
+  .slide-thumb-inner{ position:absolute; top:0; left:0; width:960px; height:540px; transform-origin:top left; pointer-events:none; }
+  .slide-thumb-inner .slide{ min-height:540px; height:540px; }
+  .slide-thumb-label{ position:absolute; bottom:0; left:0; right:0; padding:6px 10px; font-size:11px; color:var(--ink-2); background:linear-gradient(transparent, rgba(0,0,0,.55)); }
 
   .single-toolbar{ display:flex; margin-bottom:8px; }
 
@@ -409,16 +409,24 @@ function render(){
 function renderGrid(slidesHtml){
   const grid = document.getElementById('slideGrid');
   grid.innerHTML = slidesHtml.map((h,i)=>{
-    const m = h.match(/<div class="eyebrow">(.*?)<\/div>\s*<h1>(.*?)<\/h1>(?:\s*<p class="lede">(.*?)<\/p>)?/s);
-    const eyebrow = m ? m[1] : `Slide ${i+1}`;
-    const title = m ? m[2] : '';
-    const lede = m && m[3] ? m[3] : '';
-    return `<button class="slide-thumb" data-i="${i}"><div class="eyebrow">${eyebrow}</div><h2>${title}</h2><p>${lede}</p></button>`;
+    const m = h.match(/<div class="eyebrow">(.*?)<\/div>\s*<h1>(.*?)<\/h1>/s);
+    const label = m ? m[2] : `Slide ${i+1}`;
+    return `<button class="slide-thumb-wrap" data-i="${i}"><div class="slide-thumb-inner"><div class="slide active">${h}</div></div><div class="slide-thumb-label">${label}</div></button>`;
   }).join('');
-  grid.querySelectorAll('.slide-thumb').forEach(btn=>{
+  grid.querySelectorAll('.slide-thumb-wrap').forEach(btn=>{
     btn.addEventListener('click', ()=>openSingle(parseInt(btn.dataset.i,10), false));
   });
+  scaleThumbs();
 }
+function scaleThumbs(){
+  document.querySelectorAll('.slide-thumb-wrap').forEach(wrap=>{
+    const inner = wrap.querySelector('.slide-thumb-inner');
+    if(!inner) return;
+    const scale = wrap.clientWidth / 960;
+    inner.style.transform = `scale(${scale})`;
+  });
+}
+window.addEventListener('resize', ()=>{ if(viewMode==='grid') scaleThumbs(); });
 
 let viewMode = 'grid';
 let isPresenting = false;
@@ -442,6 +450,7 @@ function backToGrid(){
   viewMode = 'grid';
   document.getElementById('slideGrid').style.display = 'grid';
   document.getElementById('singleView').style.display = 'none';
+  scaleThumbs();
 }
 document.addEventListener('fullscreenchange', ()=>{
   if(!document.fullscreenElement && isPresenting) backToGrid();
