@@ -41,38 +41,38 @@
   #status{ font-size:12px; color:var(--ink-3); margin-right:4px; }
 
   .stage-wrap{ max-width:960px; margin:28px auto; padding:0 20px 40px; transition:max-width .15s ease; }
-  .stage-wrap.wide{ max-width:1500px; }
-  .slide{ min-height:520px; padding:48px 8px; display:none; flex-direction:column; }
+  .stage-wrap.wide{ max-width:min(96vw, 1900px); }
+  .slide{ min-height:520px; padding:56px 8px; display:none; flex-direction:column; justify-content:center; }
   .slide.active{ display:flex; }
   .eyebrow{ font-size:13px; color:var(--ink-3); margin:0 0 10px; letter-spacing:.02em; }
-  .slide h1{ font-size:34px; font-weight:500; margin:0 0 12px; color:var(--teal); }
-  .slide .lede{ font-size:16px; color:#fff; opacity:.85; margin:0 0 32px; max-width:620px; line-height:1.6; }
-  .slide-body{ flex:1; }
-  .slide-footnote{ font-size:12px; color:var(--ink-3); margin-top:auto; padding-top:20px; border-top:1px solid var(--line); }
+  .slide h1{ font-size:38px; font-weight:500; margin:0 0 14px; color:var(--teal); }
+  .slide .lede{ font-size:17px; color:#fff; opacity:.85; margin:0 0 36px; max-width:680px; line-height:1.6; }
+  .slide-body{ flex:1; display:flex; flex-direction:column; justify-content:center; }
+  .slide-footnote{ font-size:12px; color:var(--ink-3); margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
 
-  .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:12px; }
+  .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:32px; margin-bottom:16px; }
   .kpi{ padding:6px 0; }
-  .kpi .label{ font-size:13px; color:var(--ink-2); margin:0 0 8px; }
-  .kpi .num{ font-size:40px; font-weight:600; margin:0; color:#fff; }
+  .kpi .label{ font-size:14px; color:var(--ink-2); margin:0 0 10px; }
+  .kpi .num{ font-size:56px; font-weight:600; margin:0; color:#fff; line-height:1.05; }
   .kpi .num.up{ color:var(--success); }
   .kpi .num.down{ color:var(--danger); }
-  .kpi .sub{ font-size:12.5px; color:var(--ink-3); margin:6px 0 0; }
+  .kpi .sub{ font-size:13px; color:var(--ink-3); margin:8px 0 0; }
 
-  .card{ background:#fff; border-radius:12px; padding:20px 24px; color:#14181C; }
+  .card{ background:#fff; border-radius:12px; padding:28px 32px; color:#14181C; }
   .card + .card{ margin-top:16px; }
 
-  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  table{ width:100%; border-collapse:collapse; font-size:15px; }
   .card table{ color:#14181C; }
-  th,td{ text-align:right; padding:8px 10px; border-bottom:1px solid #E4E8EB; }
+  th,td{ text-align:right; padding:12px 14px; border-bottom:1px solid #E4E8EB; }
   th:first-child, td:first-child{ text-align:left; }
-  thead th{ color:#5B6470; font-weight:500; font-size:12px; }
+  thead th{ color:#5B6470; font-weight:500; font-size:13px; }
   tbody tr:last-child{ font-weight:700; }
 
-  .month-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:32px 16px; }
+  .month-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:40px 20px; }
   .month-tile{ text-align:center; }
-  .month-tile .saldo{ font-weight:600; font-size:32px; font-family:'Manrope',sans-serif; }
-  .month-tile .name{ font-weight:700; color:#fff; font-size:16px; margin-top:6px; }
-  .month-tile .detail{ font-size:12.5px; color:var(--ink-2); margin-top:4px; }
+  .month-tile .saldo{ font-weight:600; font-size:46px; font-family:'Manrope',sans-serif; }
+  .month-tile .name{ font-weight:700; color:#fff; font-size:18px; margin-top:8px; }
+  .month-tile .detail{ font-size:13.5px; color:var(--ink-2); margin-top:6px; }
 
   .nav{ display:flex; align-items:center; justify-content:center; gap:18px; margin-top:18px; }
   .dots{ display:flex; gap:7px; }
@@ -80,7 +80,7 @@
   .dot.active{ background:var(--teal); }
   .nav .btn{ width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:50%; }
 
-  .note{ font-size:12.5px; color:var(--ink-3); background:rgba(255,255,255,.06); border-radius:8px; padding:10px 14px; margin-top:14px; }
+  .note{ font-size:13.5px; color:var(--ink-3); background:rgba(255,255,255,.06); border-radius:8px; padding:14px 18px; margin-top:18px; }
 
   .slide-grid{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
   .slide-thumb-wrap{ position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid var(--line); cursor:pointer; padding:0; background:var(--navy); transition:transform .15s ease, border-color .15s ease; display:block; }
@@ -176,6 +176,22 @@ function monthKey(dateStr){ if(!dateStr) return null; return dateStr.slice(0,7);
 function fmtMonthLabel(key){ const [y,m]=key.split('-'); return MESES[parseInt(m,10)-1] + ' ' + y; }
 function quarterOf(monthIdx){ return Math.floor(monthIdx/3)+1; }
 function fmtBRL(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}); }
+function addMonth(k){ let [y,m]=k.split('-').map(Number); m++; if(m>12){m=1;y++;} return `${y}-${String(m).padStart(2,'0')}`; }
+
+// Sequência completa de meses (sem buracos) entre o mais antigo e o mais recente evento —
+// meses sem nenhuma entrada/saída não somem da lista, só ficam zerados.
+function fullMonthRange(){
+  const keys = new Set();
+  rawContab.forEach(r=>{ const e=getEntradaYM_contab(r); if(e) keys.add(e); const s=getSaidaYM_contab(r); if(s) keys.add(s); });
+  rawTech.forEach(r=>{ const e=getEntradaYM_tech(r); if(e) keys.add(e); const s=getSaidaYM_tech(r); if(s) keys.add(s); });
+  const sorted = Array.from(keys).filter(Boolean).sort();
+  if(!sorted.length) return [];
+  const out = [];
+  let k = sorted[0];
+  const max = sorted[sorted.length-1];
+  while(k <= max){ out.push(k); k = addMonth(k); }
+  return out;
+}
 
 // ===================== BOOT =====================
 async function loadData(){
@@ -198,10 +214,7 @@ async function loadData(){
 }
 
 function buildMonthOptions(){
-  const keys = new Set();
-  rawContab.forEach(r=>{ const e=getEntradaYM_contab(r); if(e) keys.add(e); const s=getSaidaYM_contab(r); if(s) keys.add(s); });
-  rawTech.forEach(r=>{ const e=getEntradaYM_tech(r); if(e) keys.add(e); const s=getSaidaYM_tech(r); if(s) keys.add(s); });
-  const sorted = Array.from(keys).filter(Boolean).sort().reverse();
+  const sorted = fullMonthRange().slice().reverse();
   const sel = document.getElementById('monthSelect');
   sel.innerHTML = '';
   sorted.forEach(k=>{ const opt=document.createElement('option'); opt.value=k; opt.textContent=fmtMonthLabel(k); sel.appendChild(opt); });
@@ -212,13 +225,14 @@ function buildMonthOptions(){
 // ===================== AGREGAÇÕES (SharePoint = fonte de entradas/saídas/ativos) =====================
 function monthlyEntradasSaidas(){
   const out = {};
-  const add = (k, field) => { if(!k) return; out[k]=out[k]||{entradas:0,saidas:0,tech:0,pmes:0}; out[k][field]++; };
+  fullMonthRange().forEach(k=>{ out[k] = {entradas:0,saidas:0,tech:0,pmes:0}; });
+  const add = (k, field) => { if(!k || !out[k]) return; out[k][field]++; };
   rawContab.forEach(r=>{
-    const e=getEntradaYM_contab(r); if(e){ add(e,'entradas'); out[e].pmes++; }
+    const e=getEntradaYM_contab(r); if(e && out[e]){ add(e,'entradas'); out[e].pmes++; }
     const s=getSaidaYM_contab(r); if(s) add(s,'saidas');
   });
   rawTech.forEach(r=>{
-    const e=getEntradaYM_tech(r); if(e){ add(e,'entradas'); out[e].tech++; }
+    const e=getEntradaYM_tech(r); if(e && out[e]){ add(e,'entradas'); out[e].tech++; }
     const s=getSaidaYM_tech(r); if(s) add(s,'saidas');
   });
   return out;
