@@ -9,77 +9,92 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --coral:#F72642; --coral-dark:#B01A2E;
-    --teal:#92DCE5; --teal-dark:#2C8A96;
-    --ink:#14181C; --ink-2:#5B6470; --ink-3:#8B939C;
-    --bg:#FFFFFF; --bg-alt:#F5F7F8; --line:#E4E8EB;
-    --success:#1D9E75; --danger:#F72642; --radius:14px;
+    --coral:#F72642; --coral-dark:#8E1C41;
+    --teal:#92DCE5; --teal-dark:#0C7488;
+    --navy:#0E1428; --navy-2:#161D35;
+    --ink-2:#AAB8C2; --ink-3:#7C8798;
+    --line:rgba(255,255,255,.12);
+    --success:#4FD1A5; --danger:#F7566B; --radius:16px;
   }
   *{box-sizing:border-box;}
-  body{ margin:0; font-family:'Inter',sans-serif; color:var(--ink); background:var(--bg-alt); }
+  body{
+    margin:0; font-family:'Inter',sans-serif; color:#fff;
+    background:
+      radial-gradient(ellipse 900px 700px at 8% 8%, #8E1C41 0%, rgba(142,28,65,0) 55%),
+      radial-gradient(ellipse 1000px 800px at 100% 100%, #3A2A55 0%, rgba(58,42,85,0) 55%),
+      var(--navy);
+    background-attachment: fixed;
+    min-height:100vh;
+  }
   h1,h2,h3,.num{ font-family:'Manrope',sans-serif; }
 
-  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:var(--bg); border-bottom:1px solid var(--line); }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; background:rgba(14,20,40,.7); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); }
   .brand{ display:flex; align-items:center; gap:10px; }
   .brand span{ font-size:13px; color:var(--ink-2); font-weight:500; }
   .topbar-right{ display:flex; align-items:center; gap:10px; }
-  select, .btn{ font-family:'Inter',sans-serif; font-size:13px; font-weight:500; border:1px solid var(--line); background:var(--bg); border-radius:8px; padding:8px 12px; color:var(--ink); cursor:pointer; }
-  .btn:hover{ background:var(--bg-alt); }
+  select, .btn{ font-family:'Inter',sans-serif; font-size:13px; font-weight:500; border:1px solid var(--line); background:rgba(255,255,255,.06); border-radius:8px; padding:8px 12px; color:#fff; cursor:pointer; }
+  select option{ color:#000; }
+  .btn:hover{ background:rgba(255,255,255,.14); }
   .btn:disabled{ opacity:.4; cursor:default; }
-  .btn.primary{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .btn.primary{ background:var(--coral); border-color:var(--coral); color:#fff; }
   #status{ font-size:12px; color:var(--ink-3); margin-right:4px; }
 
   .login-wrap{ display:flex; align-items:center; justify-content:center; min-height:80vh; flex-direction:column; gap:18px; text-align:center; padding:20px; }
-  .login-wrap h1{ font-size:22px; margin:0; }
+  .login-wrap h1{ font-size:24px; margin:0; color:var(--teal); }
   .login-wrap p{ color:var(--ink-2); font-size:14px; max-width:360px; margin:0; }
   .login-err{ color:var(--danger); font-size:13px; }
 
-  .stage-wrap{ max-width:920px; margin:28px auto; padding:0 20px 40px; }
-  .slide{ background:var(--bg); border-radius:var(--radius); border:1px solid var(--line); min-height:520px; padding:48px 56px; display:none; flex-direction:column; }
+  .stage-wrap{ max-width:960px; margin:28px auto; padding:0 20px 40px; }
+  .slide{ min-height:520px; padding:48px 8px; display:none; flex-direction:column; }
   .slide.active{ display:flex; }
-  .eyebrow{ font-size:13px; color:var(--ink-3); margin:0 0 6px; }
-  .slide h1{ font-size:28px; font-weight:700; margin:0 0 8px; }
-  .slide .lede{ font-size:15px; color:var(--ink-2); margin:0 0 28px; max-width:560px; line-height:1.55; }
+  .eyebrow{ font-size:13px; color:var(--ink-3); margin:0 0 10px; letter-spacing:.02em; }
+  .slide h1{ font-size:34px; font-weight:500; margin:0 0 12px; color:var(--teal); }
+  .slide .lede{ font-size:16px; color:#fff; opacity:.85; margin:0 0 32px; max-width:620px; line-height:1.6; }
   .slide-body{ flex:1; }
   .slide-footnote{ font-size:12px; color:var(--ink-3); margin-top:auto; padding-top:20px; border-top:1px solid var(--line); }
 
-  .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:8px; }
-  .kpi{ background:var(--bg-alt); border-radius:10px; padding:16px 18px; }
-  .kpi .label{ font-size:12.5px; color:var(--ink-2); margin:0 0 6px; }
-  .kpi .num{ font-size:26px; font-weight:800; margin:0; }
+  .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:12px; }
+  .kpi{ padding:6px 0; }
+  .kpi .label{ font-size:13px; color:var(--ink-2); margin:0 0 8px; }
+  .kpi .num{ font-size:40px; font-weight:600; margin:0; color:#fff; }
   .kpi .num.up{ color:var(--success); }
   .kpi .num.down{ color:var(--danger); }
-  .kpi .sub{ font-size:12px; color:var(--ink-3); margin:4px 0 0; }
+  .kpi .sub{ font-size:12.5px; color:var(--ink-3); margin:6px 0 0; }
+
+  .card{ background:#fff; border-radius:12px; padding:20px 24px; color:#14181C; }
+  .card + .card{ margin-top:16px; }
 
   table{ width:100%; border-collapse:collapse; font-size:13px; }
-  th,td{ text-align:right; padding:8px 10px; border-bottom:1px solid var(--line); }
+  .card table{ color:#14181C; }
+  th,td{ text-align:right; padding:8px 10px; border-bottom:1px solid #E4E8EB; }
   th:first-child, td:first-child{ text-align:left; }
-  thead th{ color:var(--ink-2); font-weight:500; font-size:12px; }
+  thead th{ color:#5B6470; font-weight:500; font-size:12px; }
   tbody tr:last-child{ font-weight:700; }
 
-  .month-row{ display:flex; align-items:center; gap:16px; padding:10px 0; border-bottom:1px solid var(--line); }
-  .month-row:last-child{ border-bottom:none; }
-  .month-row .saldo{ width:64px; font-weight:800; font-size:16px; }
-  .month-row .name{ width:110px; font-weight:500; }
-  .month-row .detail{ font-size:12.5px; color:var(--ink-2); }
+  .month-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:32px 16px; }
+  .month-tile{ text-align:center; }
+  .month-tile .saldo{ font-weight:600; font-size:32px; font-family:'Manrope',sans-serif; }
+  .month-tile .name{ font-weight:700; color:#fff; font-size:16px; margin-top:6px; }
+  .month-tile .detail{ font-size:12.5px; color:var(--ink-2); margin-top:4px; }
 
   .nav{ display:flex; align-items:center; justify-content:center; gap:18px; margin-top:18px; }
   .dots{ display:flex; gap:7px; }
   .dot{ width:7px; height:7px; border-radius:50%; background:var(--line); cursor:pointer; border:none; padding:0; }
-  .dot.active{ background:var(--ink); }
+  .dot.active{ background:var(--teal); }
   .nav .btn{ width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:50%; }
 
-  .note{ font-size:12.5px; color:var(--ink-3); background:var(--bg-alt); border-radius:8px; padding:10px 14px; margin-top:14px; }
+  .note{ font-size:12.5px; color:var(--ink-3); background:rgba(255,255,255,.06); border-radius:8px; padding:10px 14px; margin-top:14px; }
 
   @media print{
     .topbar, .nav{ display:none !important; }
-    body{ background:#fff; }
+    body{ background:var(--navy) !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     .stage-wrap{ margin:0; padding:0; max-width:none; }
-    .slide{ display:none !important; border:none; min-height:0; page-break-after:always; }
+    .slide{ display:none !important; min-height:0; page-break-after:always; }
     .slide.active{ display:flex !important; }
   }
   @media (max-width:640px){
-    .slide{ padding:28px 22px; }
+    .slide{ padding:28px 4px; }
+    .slide h1{ font-size:26px; }
     .topbar{ padding:12px 16px; flex-wrap:wrap; gap:10px; }
   }
 </style>
@@ -96,8 +111,10 @@
 <div id="app" style="display:none">
   <div class="topbar">
     <div class="brand">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F72642" stroke-width="2"><path d="M4 20 L4 8 M8 20 L8 5 M12 20 L12 10 L4 18"/></svg>
-      <span>Comercial · Resultados mensais</span>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round"><path d="M6 20 L6 8 M10 20 L10 5 M14 20 L14 10 L6 18"/></svg>
+      <span style="color:var(--teal);font-weight:600;font-family:'Manrope',sans-serif">lucralize</span>
+      <span style="opacity:.5">·</span>
+      <span>Resultados mensais</span>
     </div>
     <div class="topbar-right">
       <span id="status">carregando…</span>
@@ -352,10 +369,12 @@ function render(){
     <h1>Vendas por produto no semestre</h1>
     <p class="lede">Entradas por mês, listas "Controle de Clientes" e "Base de Usuários" (SharePoint).</p>
     <div class="slide-body">
-      <table>
-        <thead><tr><th>Produto</th>${semestreKeys.map(k=>`<th>${MESES[parseInt(k.slice(5),10)-1].slice(0,3)}</th>`).join('')}<th>Total</th></tr></thead>
-        <tbody>${rowTech}${rowPmes}${rowTotal}</tbody>
-      </table>
+      <div class="card">
+        <table>
+          <thead><tr><th>Produto</th>${semestreKeys.map(k=>`<th>${MESES[parseInt(k.slice(5),10)-1].slice(0,3)}</th>`).join('')}<th>Total</th></tr></thead>
+          <tbody>${rowTech}${rowPmes}${rowTotal}</tbody>
+        </table>
+      </div>
     </div>
   `);
 
@@ -378,13 +397,13 @@ function render(){
   const anoKeys = allKeys.filter(k=>k.startsWith(y));
   const monthRows = anoKeys.map(k=>{
     const a = agg[k]; const s = a.entradas-a.saidas;
-    return `<div class="month-row"><div class="saldo" style="color:${s>=0?'var(--success)':'var(--danger)'}">${s>=0?'+':''}${s}</div><div class="name">${MESES[parseInt(k.slice(5),10)-1]}</div><div class="detail">${a.entradas} entradas e ${a.saidas} saídas</div></div>`;
+    return `<div class="month-tile"><div class="saldo" style="color:${s>=0?'var(--success)':'var(--danger)'}">${s>=0?'+':''}${s}</div><div class="name">${MESES[parseInt(k.slice(5),10)-1]}</div><div class="detail">${a.entradas} entradas e ${a.saidas} saídas</div></div>`;
   }).join('');
   slidesHtml.push(`
     <div class="eyebrow">Slide 5</div>
     <h1>Clientes mês a mês em ${y}</h1>
     <p class="lede">O saldo de cada mês, com entradas e saídas lado a lado.</p>
-    <div class="slide-body">${monthRows || '<p class="note">Sem dados suficientes ainda.</p>'}</div>
+    <div class="slide-body"><div class="month-grid">${monthRows || '<p class="note">Sem dados suficientes ainda.</p>'}</div></div>
   `);
 
   // Slide 6 — funil de leads (Agendor)
@@ -429,7 +448,9 @@ function render(){
     <h1>Meta vs. realizado vs. GAP</h1>
     <p class="lede">Checkpoints trimestrais fixos da premiação (525 / 600 / 675 / 750).</p>
     <div class="slide-body">
-      <table><thead><tr><th>Trimestre</th><th>Meta (faixa 1)</th><th>Base de clientes</th><th>GAP</th></tr></thead><tbody>${metaRows}</tbody></table>
+      <div class="card">
+        <table><thead><tr><th>Trimestre</th><th>Meta (faixa 1)</th><th>Base de clientes</th><th>GAP</th></tr></thead><tbody>${metaRows}</tbody></table>
+      </div>
       <div class="note">"Base de clientes" usa o total de ativos hoje para todos os trimestres — para ver o valor histórico de cada trimestre passado, selecione o mês de fechamento dele.</div>
     </div>
   `);
