@@ -268,12 +268,17 @@ async function loadData(){
   }
 }
 
+function currentRealMonthKey(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
 function buildMonthOptions(){
   const sorted = fullMonthRange().slice().reverse();
   const sel = document.getElementById('monthSelect');
   sel.innerHTML = '';
   sorted.forEach(k=>{ const opt=document.createElement('option'); opt.value=k; opt.textContent=fmtMonthLabel(k); sel.appendChild(opt); });
-  if(!selectedMonthKey || !sorted.includes(selectedMonthKey)) selectedMonthKey = sorted[0];
+  const realCurrent = currentRealMonthKey();
+  selectedMonthKey = sorted.includes(realCurrent) ? realCurrent : sorted[0];
   sel.value = selectedMonthKey;
 }
 
@@ -456,15 +461,38 @@ function render(){
   `);
 
   // Slide 5 — receita e novos clientes
+  const curLabel5 = MESES[monthIdx];
   slidesHtml.push(`
     <div class="eyebrow">Slide 5</div>
     <h1>Receita e novos clientes</h1>
-    <p class="lede">Como ${MESES[monthIdx]} entrou para a base.</p>
+    <p class="lede">Como ${curLabel5} entrou para a base, comparado a ${prevLabel || 'o mês anterior'}.</p>
     <div class="slide-body">
+      <div class="compare-row">
+        <div>
+          <p class="compare-num">${ativosPrev ? ativosPrev.total : '-'}</p>
+          <p class="compare-detail">${ativosPrev ? `${ativosPrev.tech} tech (${pct(ativosPrev.tech,ativosPrev.total)}%) e ${ativosPrev.contab} contabilidade (${pct(ativosPrev.contab,ativosPrev.total)}%)` : ''}</p>
+          <p class="compare-label">Clientes Ativos ${prevLabel || ''}</p>
+        </div>
+        <div>
+          <p class="compare-num">${ativos.total}</p>
+          <p class="compare-detail">${ativos.tech} tech (${pct(ativos.tech,ativos.total)}%) e ${ativos.contab} contabilidade (${pct(ativos.contab,ativos.total)}%)</p>
+          <p class="compare-label">Clientes Ativos ${curLabel5}</p>
+        </div>
+      </div>
+      <div class="compare-row">
+        <div>
+          <p class="compare-num-split">${ativosPrev?fmtBRL(ativosPrev.ticket):'-'} <span class="unit">${prevLabel?prevLabel.toLowerCase():''}</span> / ${fmtBRL(ativos.ticket)} <span class="unit">${curLabel5.toLowerCase()}</span></p>
+          <p class="compare-label">Ticket Médio</p>
+          <p class="compare-sub">Valor médio por cliente por mês</p>
+        </div>
+        <div>
+          <p class="compare-num-split">${prev?prev.entradas:'-'} <span class="unit">${prevLabel?prevLabel.toLowerCase():''}</span> / ${cur.entradas} <span class="unit">${curLabel5.toLowerCase()}</span></p>
+          <p class="compare-label">Novos Clientes</p>
+          <p class="compare-sub">Entradas por mês</p>
+        </div>
+      </div>
       <div class="kpis">
-        <div class="kpi"><p class="label">Novos clientes</p><p class="num up">+${cur.entradas}</p>${prev?`<p class="sub">${prevLabel||''}: ${prev.entradas}</p>`:''}</div>
         <div class="kpi"><p class="label">MRR consolidado</p><p class="num">${fmtBRL(ativos.mrr)}</p></div>
-        <div class="kpi"><p class="label">Ticket médio</p><p class="num">${fmtBRL(ativos.ticket)}</p>${ativosPrev?`<p class="sub">${prevLabel||''}: ${fmtBRL(ativosPrev.ticket)}</p>`:''}</div>
         <div class="kpi"><p class="label">Mix Tech / Contabilidade</p><p class="num">${pct(ativos.tech,ativos.total)}% / ${pct(ativos.contab,ativos.total)}%</p></div>
       </div>
     </div>
@@ -511,7 +539,7 @@ function render(){
     <h1>Comparativo histórico</h1>
     <p class="lede">Evolução mês a mês — vendas por produto e saldo de clientes em ${y}.</p>
     <div class="slide-body">
-      <div class="card" style="margin-bottom:24px;">
+      <div class="table-dark" style="margin-bottom:24px;">
         <table>
           <colgroup><col style="width:22%"><col span="${semestreKeys.length}">${semestreKeys.map(()=>'').join('')}<col style="width:12%"></colgroup>
           <thead><tr><th>Produto</th>${semestreKeys.map(k=>`<th>${MESES[parseInt(k.slice(5),10)-1].slice(0,3)}</th>`).join('')}<th>Total</th></tr></thead>
@@ -711,13 +739,31 @@ async function exportPPTX(){
 
     // Slide 5 — receita e novos clientes
     s = baseSlide();
-    header(s, 'Slide 5', 'Receita e novos clientes', `Como ${MESES[R.monthIdx]} entrou para a base.`);
-    kpiRow(s, [
-      { label:'Novos clientes', value:`+${R.cur.entradas}`, color:SUCCESS, sub:R.prev?`${R.prevLabel||''}: ${R.prev.entradas}`:'' },
-      { label:'MRR consolidado', value:fmtBRL(R.ativos.mrr) },
-      { label:'Ticket médio', value:fmtBRL(R.ativos.ticket), sub:R.ativosPrev?`${R.prevLabel||''}: ${fmtBRL(R.ativosPrev.ticket)}`:'' },
-      { label:'Mix Tech / Contabilidade', value:`${pct(R.ativos.tech,R.ativos.total)}% / ${pct(R.ativos.contab,R.ativos.total)}%` }
-    ], 2.0);
+    {
+      const curLabel5 = MESES[R.monthIdx];
+      header(s, 'Slide 5', 'Receita e novos clientes', `Como ${curLabel5} entrou para a base, comparado a ${R.prevLabel || 'o mês anterior'}.`);
+
+      s.addText(R.ativosPrev ? String(R.ativosPrev.total) : '-', { x:0.5, y:1.55, w:4.2, h:0.7, fontSize:34, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText(R.ativosPrev ? `${R.ativosPrev.tech} tech (${pct(R.ativosPrev.tech,R.ativosPrev.total)}%) e ${R.ativosPrev.contab} contabilidade (${pct(R.ativosPrev.contab,R.ativosPrev.total)}%)` : '', { x:0.5, y:2.2, w:4.2, h:0.3, fontSize:9, color:MUTED, align:'center', fontFace:'Arial' });
+      s.addText(`Clientes Ativos ${R.prevLabel||''}`, { x:0.5, y:2.5, w:4.2, h:0.3, fontSize:11, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+
+      s.addText(String(R.ativos.total), { x:5.0, y:1.55, w:4.2, h:0.7, fontSize:34, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText(`${R.ativos.tech} tech (${pct(R.ativos.tech,R.ativos.total)}%) e ${R.ativos.contab} contabilidade (${pct(R.ativos.contab,R.ativos.total)}%)`, { x:5.0, y:2.2, w:4.2, h:0.3, fontSize:9, color:MUTED, align:'center', fontFace:'Arial' });
+      s.addText(`Clientes Ativos ${curLabel5}`, { x:5.0, y:2.5, w:4.2, h:0.3, fontSize:11, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+
+      s.addText(`${R.ativosPrev?fmtBRL(R.ativosPrev.ticket):'-'} / ${fmtBRL(R.ativos.ticket)}`, { x:0.5, y:3.1, w:4.2, h:0.5, fontSize:18, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText('Ticket Médio', { x:0.5, y:3.6, w:4.2, h:0.3, fontSize:11, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText('Valor médio por cliente por mês', { x:0.5, y:3.86, w:4.2, h:0.3, fontSize:9, color:MUTED, align:'center', fontFace:'Arial' });
+
+      s.addText(`${R.prev?R.prev.entradas:'-'} / ${R.cur.entradas}`, { x:5.0, y:3.1, w:4.2, h:0.5, fontSize:18, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText('Novos Clientes', { x:5.0, y:3.6, w:4.2, h:0.3, fontSize:11, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText('Entradas por mês', { x:5.0, y:3.86, w:4.2, h:0.3, fontSize:9, color:MUTED, align:'center', fontFace:'Arial' });
+
+      kpiRow(s, [
+        { label:'MRR consolidado', value:fmtBRL(R.ativos.mrr) },
+        { label:'Mix Tech / Contabilidade', value:`${pct(R.ativos.tech,R.ativos.total)}% / ${pct(R.ativos.contab,R.ativos.total)}%` }
+      ], 4.5);
+    }
 
     // Slide 6 — churn e perdas
     s = baseSlide();
@@ -736,14 +782,15 @@ async function exportPPTX(){
     s = baseSlide();
     header(s, 'Slide 7', 'Comparativo histórico', `Evolução mês a mês — vendas por produto e saldo de clientes em ${R.y}.`);
     {
-      const head = [{text:'Produto', options:{bold:true, fill:{color:'F5F7F8'}}}].concat(
-        R.semestreKeys.map(k=>({text:MESES[parseInt(k.slice(5),10)-1].slice(0,3), options:{bold:true, fill:{color:'F5F7F8'}}}))
-      ).concat([{text:'Total', options:{bold:true, fill:{color:'F5F7F8'}}}]);
+      const headFillP7 = { color: '161D35' };
+      const head = [{text:'Produto', options:{bold:true, color:TEAL, fill:headFillP7}}].concat(
+        R.semestreKeys.map(k=>({text:MESES[parseInt(k.slice(5),10)-1].slice(0,3), options:{bold:true, color:TEAL, fill:headFillP7}}))
+      ).concat([{text:'Total', options:{bold:true, color:TEAL, fill:headFillP7}}]);
       let totTech=0, totPmes=0;
       const rowTech=['Lucralize Tech'], rowPmes=['Contabilidade PMEs'];
       R.semestreKeys.forEach(k=>{ const a=R.agg[k]||{tech:0,pmes:0}; totTech+=a.tech; totPmes+=a.pmes; rowTech.push(String(a.tech)); rowPmes.push(String(a.pmes)); });
       rowTech.push(String(totTech)); rowPmes.push(String(totPmes));
-      tableSlide(s, 1.85, [head, rowTech, rowPmes], [2].concat(R.semestreKeys.map(()=>1)).concat([1]));
+      tableSlide(s, 1.85, [head, rowTech, rowPmes], [2].concat(R.semestreKeys.map(()=>1)).concat([1]), { dark:true, fontSize:11 });
     }
     {
       const cols = 6;
@@ -795,7 +842,7 @@ document.getElementById('prevBtn').addEventListener('click', ()=>goToSlide(slide
 document.getElementById('nextBtn').addEventListener('click', ()=>goToSlide(slideIndex+1));
 document.getElementById('printBtn').addEventListener('click', ()=>window.print());
 document.getElementById('pptxBtn').addEventListener('click', exportPPTX);
-document.getElementById('presentBtn').addEventListener('click', ()=>openSingle(0, true));
+document.getElementById('presentBtn').addEventListener('click', ()=>openSingle(viewMode==='single' ? slideIndex : 0, true));
 document.getElementById('backToGridBtn').addEventListener('click', backToGrid);
 document.getElementById('refreshBtn').addEventListener('click', async ()=>{
   document.getElementById('status').textContent = 'atualizando…';
