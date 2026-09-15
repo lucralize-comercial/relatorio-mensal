@@ -69,7 +69,8 @@
   thead th{ color:#5B6470; font-weight:500; font-size:13px; }
   tbody tr:last-child{ font-weight:700; }
 
-  .month-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:40px 20px; }
+  .month-grid{ display:flex; flex-direction:column; gap:36px; }
+  .month-grid-row{ display:grid; grid-template-columns:repeat(6,1fr); gap:40px 16px; }
   .month-tile{ text-align:center; }
   .month-tile .saldo{ font-weight:600; font-size:46px; font-family:'Manrope',sans-serif; }
   .month-tile .name{ font-weight:700; color:#fff; font-size:18px; margin-top:8px; }
@@ -357,10 +358,15 @@ function render(){
 
   // Slide 5 — clientes mês a mês
   const anoKeys = allKeys.filter(k=>k.startsWith(y));
-  const monthRows = anoKeys.map(k=>{
+  function tile(k){
     const a = agg[k]; const s = a.entradas-a.saidas;
     return `<div class="month-tile"><div class="saldo" style="color:${s>=0?'var(--success)':'var(--danger)'}">${s>=0?'+':''}${s}</div><div class="name">${MESES[parseInt(k.slice(5),10)-1]}</div><div class="detail">${a.entradas} entradas e ${a.saidas} saídas</div></div>`;
-  }).join('');
+  }
+  const primeiroSemestre = anoKeys.filter(k=>parseInt(k.slice(5),10)<=6);
+  const segundoSemestre = anoKeys.filter(k=>parseInt(k.slice(5),10)>6);
+  const monthRows = anoKeys.length
+    ? `<div class="month-grid-row">${primeiroSemestre.map(tile).join('')}</div><div class="month-grid-row">${segundoSemestre.map(tile).join('')}</div>`
+    : '';
   slidesHtml.push(`
     <div class="eyebrow">Slide 5</div>
     <h1>Clientes mês a mês em ${y}</h1>
@@ -556,18 +562,18 @@ async function exportPPTX(){
       { label:'Ticket médio', value: fmtBRL(R.ativos.ticket) }
     ], 2.0);
 
-    // Slide 5 — clientes mês a mês
+    // Slide 5 — clientes mês a mês (2 linhas: jan-jun / jul-dez)
     s = baseSlide();
     header(s, 'Slide 5', `Clientes mês a mês em ${R.y}`, 'O saldo de cada mês, com entradas e saídas lado a lado.');
     {
-      const cols = 4;
+      const cols = 6;
       R.anoKeys.forEach((k,i)=>{
         const a = R.agg[k]; const sVal = a.entradas-a.saidas;
         const col = i % cols, row = Math.floor(i/cols);
-        const x = 0.5 + col*2.25, y = 2.0 + row*1.15;
-        s.addText(`${sVal>=0?'+':''}${sVal}`, { x, y, w:2.0, h:0.5, fontSize:24, bold:true, color: sVal>=0?SUCCESS:DANGER, align:'center', fontFace:'Arial' });
-        s.addText(MESES[parseInt(k.slice(5),10)-1], { x, y:y+0.45, w:2.0, h:0.3, fontSize:12, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
-        s.addText(`${a.entradas} ent. / ${a.saidas} saí.`, { x, y:y+0.7, w:2.0, h:0.3, fontSize:9, color:MUTED, align:'center', fontFace:'Arial' });
+        const x = 0.4 + col*1.5, y = 2.0 + row*1.15;
+        s.addText(`${sVal>=0?'+':''}${sVal}`, { x, y, w:1.4, h:0.5, fontSize:20, bold:true, color: sVal>=0?SUCCESS:DANGER, align:'center', fontFace:'Arial' });
+        s.addText(MESES[parseInt(k.slice(5),10)-1].slice(0,3), { x, y:y+0.45, w:1.4, h:0.3, fontSize:11, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+        s.addText(`${a.entradas}e/${a.saidas}s`, { x, y:y+0.7, w:1.4, h:0.3, fontSize:8, color:MUTED, align:'center', fontFace:'Arial' });
       });
     }
 
