@@ -46,7 +46,7 @@
 
   /* Canvas fixo 16:9 (1280x720, mesma proporção do PowerPoint) — sempre escalado para caber, nunca rola */
   #slides{ position:relative; width:100%; aspect-ratio:16/9; max-height:74vh; margin:0 auto; overflow:hidden; }
-  .slide{ position:absolute; top:0; left:0; width:1280px; height:720px; padding:52px 64px; box-sizing:border-box; display:none; flex-direction:column; justify-content:flex-start; overflow:hidden; transform-origin:top left; }
+  .slide{ position:absolute; top:0; left:0; width:1280px; height:720px; padding:52px 64px; box-sizing:border-box; display:none; flex-direction:column; justify-content:center; overflow:hidden; transform-origin:top left; }
   .slide.active{ display:flex; }
   .eyebrow{ font-size:12px; color:var(--ink-3); margin:0 0 8px; letter-spacing:.02em; }
   .slide h1{ font-size:34px; font-weight:500; margin:0 0 10px; color:var(--teal); }
@@ -318,6 +318,20 @@ function funilLeadsAcumuladoAno(y, uptoMonthK){
   });
   return { leads, fechamentos, conversao: leads ? (fechamentos/leads*100) : 0 };
 }
+function funilMensalAno(y){
+  const out = {};
+  MESES.forEach((_,i)=>{ out[`${y}-${String(i+1).padStart(2,'0')}`] = { leads:0, ganho:0 }; });
+  DEALS.forEach(d=>{
+    const fn = (d.dealStage && d.dealStage.funnel && d.dealStage.funnel.name) || '';
+    if(FUNIS_LEAD.some(f=>fn.toLowerCase().includes(f.toLowerCase()))){
+      const createdYM = monthKey(d.createdAt);
+      if(createdYM && out[createdYM]) out[createdYM].leads++;
+      const wonYM = d.wonAt ? monthKey(d.wonAt) : null;
+      if(wonYM && out[wonYM]) out[wonYM].ganho++;
+    }
+  });
+  return out;
+}
 
 // ===================== RENDER =====================
 function render(){
@@ -450,17 +464,44 @@ function render(){
   `);
 
   // Slide 4 — funil de vendas
+  function funilAnoTable(){
+    const dataMes = funilMensalAno(y);
+    const monthKeysFunil = Object.keys(dataMes).sort();
+    let rowLeads='<tr><td>Leads</td>', rowGanho='<tr><td>Ganho</td>', rowPct='<tr><td>%</td>';
+    let totLeads=0, totGanho=0;
+    monthKeysFunil.forEach(k=>{
+      const isFuture = k > selectedMonthKey;
+      const a = dataMes[k];
+      if(isFuture){
+        rowLeads+='<td>-</td>'; rowGanho+='<td>-</td>'; rowPct+='<td>-</td>';
+      }else{
+        totLeads+=a.leads; totGanho+=a.ganho;
+        const pctMes = a.leads ? (a.ganho/a.leads*100).toFixed(1)+'%' : '0.0%';
+        rowLeads+=`<td>${a.leads}</td>`; rowGanho+=`<td>${a.ganho}</td>`; rowPct+=`<td>${pctMes}</td>`;
+      }
+    });
+    const pctTotal = totLeads ? (totGanho/totLeads*100).toFixed(1)+'%' : '0.0%';
+    rowLeads+=`<td>${totLeads}</td></tr>`; rowGanho+=`<td>${totGanho}</td></tr>`; rowPct+=`<td>${pctTotal}</td></tr>`;
+    return `<div class="table-dark">
+      <table>
+        <colgroup><col style="width:9%"><col span="${monthKeysFunil.length}">${monthKeysFunil.map(()=>'').join('')}<col style="width:9%"></colgroup>
+        <thead><tr><th></th>${monthKeysFunil.map(k=>`<th>${MESES[parseInt(k.slice(5),10)-1].slice(0,3)}</th>`).join('')}<th>Total</th></tr></thead>
+        <tbody>${rowLeads}${rowGanho}${rowPct}</tbody>
+      </table>
+    </div>`;
+  }
   slidesHtml.push(`
     <div class="eyebrow">Slide 4</div>
     <h1>Funil de vendas</h1>
     <p class="lede">Funil Comercial no Agendor — volume e conversão acumulados até ${MESES[monthIdx]}.</p>
     <div class="slide-body">
-      <div class="kpis">
+      <div class="kpis" style="margin-bottom:14px;">
         <div class="kpi"><p class="label">Leads Inbound no ano</p><p class="num">${funilAno.leads}</p><p class="sub">Funil Comercial, janeiro a ${MESES[monthIdx].toLowerCase()}</p></div>
         <div class="kpi"><p class="label">Fechamentos no ano</p><p class="num">${funilAno.fechamentos}</p><p class="sub">Conversão média de ${funilAno.conversao.toFixed(0)}%</p></div>
         <div class="kpi"><p class="label">Leads em ${MESES[monthIdx]}</p><p class="num">${funil.leads}</p><p class="sub">${funilAno.leads?(funil.leads/funilAno.leads*100).toFixed(1):'0.0'}% do total do ano</p></div>
         <div class="kpi"><p class="label">Fechamentos em ${MESES[monthIdx]}</p><p class="num">${funil.fechamentos}</p><p class="sub">Conversão do mês: ${funil.conversao.toFixed(1)}%</p></div>
       </div>
+      ${funilAnoTable()}
       <div class="note">Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.</div>
     </div>
   `);
@@ -790,8 +831,31 @@ async function exportPPTX(){
       { label:'Fechamentos no ano', value:String(R.funilAno.fechamentos), sub:`Conversão média de ${R.funilAno.conversao.toFixed(0)}%` },
       { label:`Leads em ${MESES[R.monthIdx]}`, value:String(R.funil.leads), sub:`${R.funilAno.leads?(R.funil.leads/R.funilAno.leads*100).toFixed(1):'0.0'}% do total do ano` },
       { label:`Fechamentos em ${MESES[R.monthIdx]}`, value:String(R.funil.fechamentos), sub:`Conversão do mês: ${R.funil.conversao.toFixed(1)}%` }
-    ], 2.0);
-    s.addText('Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.', { x:0.5, y:3.6, w:9, h:0.5, fontSize:10, color:MUTED, fontFace:'Arial' });
+    ], 1.85);
+    {
+      const dataMes = funilMensalAno(R.y);
+      const monthKeysFunil = Object.keys(dataMes).sort();
+      const headFill4 = { color: '161D35' };
+      const head = [{text:'', options:{fill:headFill4}}].concat(
+        monthKeysFunil.map(k=>({text:MESES[parseInt(k.slice(5),10)-1].slice(0,3), options:{bold:true, color:TEAL, fill:headFill4}}))
+      ).concat([{text:'Total', options:{bold:true, color:TEAL, fill:headFill4}}]);
+      let totLeads=0, totGanho=0;
+      const rowLeads=['Leads'], rowGanho=['Ganho'], rowPct=['%'];
+      monthKeysFunil.forEach(k=>{
+        const isFuture = k > selectedMonthKey;
+        const a = dataMes[k];
+        if(isFuture){ rowLeads.push('-'); rowGanho.push('-'); rowPct.push('-'); }
+        else{
+          totLeads+=a.leads; totGanho+=a.ganho;
+          rowLeads.push(String(a.leads)); rowGanho.push(String(a.ganho));
+          rowPct.push(a.leads?(a.ganho/a.leads*100).toFixed(1)+'%':'0.0%');
+        }
+      });
+      rowLeads.push(String(totLeads)); rowGanho.push(String(totGanho));
+      rowPct.push(totLeads?(totGanho/totLeads*100).toFixed(1)+'%':'0.0%');
+      tableSlide(s, 3.25, [head, rowLeads, rowGanho, rowPct], [0.6].concat(monthKeysFunil.map(()=>0.6)).concat([0.7]), { dark:true, fontSize:8 });
+    }
+    s.addText('Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.', { x:0.5, y:4.9, w:9, h:0.4, fontSize:9, color:MUTED, fontFace:'Arial' });
 
     // Slide 5 — receita e novos clientes
     s = baseSlide();
