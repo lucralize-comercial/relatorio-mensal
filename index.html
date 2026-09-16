@@ -61,6 +61,7 @@
   .kpi{ padding:4px 0; }
   .kpi .label{ font-size:12px; color:var(--ink-2); margin:0 0 6px; }
   .kpi .num{ font-size:30px; font-weight:600; margin:0; color:#fff; line-height:1.1; word-break:break-word; }
+  .kpis.compact .num{ font-size:24px; }
   .kpi .num.up{ color:var(--success); }
   .kpi .num.down{ color:var(--danger); }
   .kpi .sub{ font-size:11px; color:var(--ink-3); margin:5px 0 0; }
@@ -83,6 +84,7 @@
   thead th{ color:#5B6470; font-weight:500; font-size:10.5px; }
   tbody tr:last-child{ font-weight:700; }
 
+  .compare-section-label{ font-size:10px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; margin:0 0 20px; }
   .compare-row{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:18px; text-align:center; }
   .compare-row:last-child{ margin-bottom:0; }
   .compare-num{ font-size:38px; font-weight:700; color:#fff; margin:0; font-family:'Manrope',sans-serif; }
@@ -516,7 +518,7 @@ function render(){
     <h1>Funil de vendas</h1>
     <p class="lede">Funil Comercial no Agendor — volume e conversão acumulados até ${MESES[monthIdx]}.</p>
     <div class="slide-body">
-      <div class="kpis" style="margin-bottom:24px;">
+      <div class="kpis compact" style="margin-bottom:24px;">
         <div class="kpi"><p class="label">Leads Inbound no ano</p><p class="num">${funilAno.leads}</p><p class="sub">Funil Comercial, janeiro a ${MESES[monthIdx].toLowerCase()}</p></div>
         <div class="kpi"><p class="label">Fechamentos no ano</p><p class="num">${funilAno.fechamentos}</p><p class="sub">Conversão média de ${funilAno.conversao.toFixed(0)}%</p></div>
         <div class="kpi"><p class="label">Leads em ${MESES[monthIdx]}</p><p class="num">${funil.leads}</p><p class="sub">${funilAno.leads?(funil.leads/funilAno.leads*100).toFixed(1):'0.0'}% do total do ano</p></div>
@@ -572,28 +574,34 @@ function render(){
     <h1>Novos clientes e ticket médio</h1>
     <p class="lede">Como ${curLabel5} entrou para a base, comparado a ${prevLabel || 'o mês anterior'}.</p>
     <div class="slide-body">
-      <div class="compare-row">
-        <div>
-          <p class="compare-num">${ativosPrev ? ativosPrev.total : '-'}</p>
-          <p class="compare-detail">${ativosPrev ? `${ativosPrev.tech} tech (${pct(ativosPrev.tech,ativosPrev.total)}%) e ${ativosPrev.contab} contabilidade (${pct(ativosPrev.contab,ativosPrev.total)}%)` : ''}</p>
-          <p class="compare-label">Clientes Ativos ${prevLabel || ''}</p>
-        </div>
-        <div>
-          <p class="compare-num">${ativos.total}</p>
-          <p class="compare-detail">${ativos.tech} tech (${pct(ativos.tech,ativos.total)}%) e ${ativos.contab} contabilidade (${pct(ativos.contab,ativos.total)}%)</p>
-          <p class="compare-label">Clientes Ativos ${curLabel5}</p>
+      <div style="margin-bottom:32px;">
+        <p class="compare-section-label">Base de clientes</p>
+        <div class="compare-row" style="margin-bottom:0;">
+          <div>
+            <p class="compare-num">${ativosPrev ? ativosPrev.total : '-'}</p>
+            <p class="compare-detail">${ativosPrev ? `${ativosPrev.tech} tech (${pct(ativosPrev.tech,ativosPrev.total)}%) e ${ativosPrev.contab} contabilidade (${pct(ativosPrev.contab,ativosPrev.total)}%)` : ''}</p>
+            <p class="compare-label">Clientes Ativos ${prevLabel || ''}</p>
+          </div>
+          <div>
+            <p class="compare-num">${ativos.total}</p>
+            <p class="compare-detail">${ativos.tech} tech (${pct(ativos.tech,ativos.total)}%) e ${ativos.contab} contabilidade (${pct(ativos.contab,ativos.total)}%)</p>
+            <p class="compare-label">Clientes Ativos ${curLabel5}</p>
+          </div>
         </div>
       </div>
-      <div class="compare-row">
-        <div>
-          <p class="compare-num-split">${ativosPrev?fmtBRL(ativosPrev.ticket):'-'} <span class="unit">${prevLabel?prevLabel.toLowerCase():''}</span> / ${fmtBRL(ativos.ticket)} <span class="unit">${curLabel5.toLowerCase()}</span></p>
-          <p class="compare-label">Ticket Médio</p>
-          <p class="compare-sub">Valor médio por cliente por mês</p>
-        </div>
-        <div>
-          <p class="compare-num-split">${prev?prev.entradas:'-'} <span class="unit">${prevLabel?prevLabel.toLowerCase():''}</span> / ${cur.entradas} <span class="unit">${curLabel5.toLowerCase()}</span></p>
-          <p class="compare-label">Novos Clientes</p>
-          <p class="compare-sub">Entradas por mês</p>
+      <div>
+        <p class="compare-section-label">Receita e novos clientes</p>
+        <div class="compare-row" style="margin-bottom:0;">
+          <div>
+            <p class="compare-num-split">${prev?prev.entradas:'-'} <span class="unit">${prevLabel?prevLabel.toLowerCase():''}</span> / ${cur.entradas} <span class="unit">${curLabel5.toLowerCase()}</span></p>
+            <p class="compare-label">Novos Clientes</p>
+            <p class="compare-sub">Entradas por mês</p>
+          </div>
+          <div>
+            <p class="compare-num-split">${ativosPrev?fmtBRL(ativosPrev.ticket):'-'} <span class="unit">${prevLabel?prevLabel.toLowerCase():''}</span> / ${fmtBRL(ativos.ticket)} <span class="unit">${curLabel5.toLowerCase()}</span></p>
+            <p class="compare-label">Ticket Médio</p>
+            <p class="compare-sub">Valor médio por cliente por mês</p>
+          </div>
         </div>
       </div>
     </div>
@@ -648,7 +656,7 @@ function render(){
     <h1>Churn e perdas</h1>
     <p class="lede">Clientes que saíram da base em ${MESES[monthIdx]}, e o acumulado do ano.</p>
     <div class="slide-body">
-      <div class="kpis" style="margin-bottom:24px;">
+      <div class="kpis compact" style="margin-bottom:24px;">
         <div class="kpi"><p class="label">Saídas no mês</p><p class="num down">-${cur.saidas}</p>${prev?`<p class="sub">${prevLabel||''}: ${prev.saidas}</p>`:''}</div>
         <div class="kpi"><p class="label">Saídas no ano</p><p class="num down">-${saidasAno}</p><p class="sub">Janeiro a ${MESES[monthIdx].toLowerCase()}</p></div>
         <div class="kpi"><p class="label">Taxa de churn do mês</p><p class="num">${churnTaxa.toFixed(1)}%</p><p class="sub">sobre a base do mês anterior (${churnBase})</p></div>
@@ -875,7 +883,7 @@ async function exportPPTX(){
       { label:'Fechamentos no ano', value:String(R.funilAno.fechamentos), sub:`Conversão média de ${R.funilAno.conversao.toFixed(0)}%` },
       { label:`Leads em ${MESES[R.monthIdx]}`, value:String(R.funil.leads), sub:`${R.funilAno.leads?(R.funil.leads/R.funilAno.leads*100).toFixed(1):'0.0'}% do total do ano` },
       { label:`Fechamentos em ${MESES[R.monthIdx]}`, value:String(R.funil.fechamentos), sub:`Conversão do mês: ${R.funil.conversao.toFixed(1)}%` }
-    ], 1.85);
+    ], 1.85, { valueSize:22 });
     {
       const dataMes = funilMensalAno(R.y);
       const monthKeysFunil = Object.keys(dataMes).sort();
@@ -926,27 +934,31 @@ async function exportPPTX(){
       tableSlide(s, 3.35, [head, rowTech, rowPmes], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:8 });
     }
 
-    // Slide 6 — receita e novos clientes
+    // Slide 6 — novos clientes e ticket médio
     s = baseSlide();
     {
       const curLabel5 = MESES[R.monthIdx];
       header(s, 'Slide 6', 'Novos clientes e ticket médio', `Como ${curLabel5} entrou para a base, comparado a ${R.prevLabel || 'o mês anterior'}.`);
 
-      s.addText(R.ativosPrev ? String(R.ativosPrev.total) : '-', { x:0.5, y:1.6, w:4.2, h:0.65, fontSize:30, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
-      s.addText(R.ativosPrev ? `${R.ativosPrev.tech} tech (${pct(R.ativosPrev.tech,R.ativosPrev.total)}%) e ${R.ativosPrev.contab} contabilidade (${pct(R.ativosPrev.contab,R.ativosPrev.total)}%)` : '', { x:0.5, y:2.22, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
-      s.addText(`Clientes Ativos ${R.prevLabel||''}`, { x:0.5, y:2.5, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText('BASE DE CLIENTES', { x:0.5, y:1.45, w:9, h:0.25, fontSize:9, bold:true, color:MUTED, fontFace:'Arial', charSpacing:1 });
 
-      s.addText(String(R.ativos.total), { x:5.0, y:1.6, w:4.2, h:0.65, fontSize:30, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
-      s.addText(`${R.ativos.tech} tech (${pct(R.ativos.tech,R.ativos.total)}%) e ${R.ativos.contab} contabilidade (${pct(R.ativos.contab,R.ativos.total)}%)`, { x:5.0, y:2.22, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
-      s.addText(`Clientes Ativos ${curLabel5}`, { x:5.0, y:2.5, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText(R.ativosPrev ? String(R.ativosPrev.total) : '-', { x:0.5, y:1.78, w:4.2, h:0.65, fontSize:30, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText(R.ativosPrev ? `${R.ativosPrev.tech} tech (${pct(R.ativosPrev.tech,R.ativosPrev.total)}%) e ${R.ativosPrev.contab} contabilidade (${pct(R.ativosPrev.contab,R.ativosPrev.total)}%)` : '', { x:0.5, y:2.4, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
+      s.addText(`Clientes Ativos ${R.prevLabel||''}`, { x:0.5, y:2.68, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
 
-      s.addText(`${R.ativosPrev?fmtBRL(R.ativosPrev.ticket):'-'} / ${fmtBRL(R.ativos.ticket)}`, { x:0.5, y:3.1, w:4.2, h:0.45, fontSize:16, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
-      s.addText('Ticket Médio', { x:0.5, y:3.56, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
-      s.addText('Valor médio por cliente por mês', { x:0.5, y:3.82, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
+      s.addText(String(R.ativos.total), { x:5.0, y:1.78, w:4.2, h:0.65, fontSize:30, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText(`${R.ativos.tech} tech (${pct(R.ativos.tech,R.ativos.total)}%) e ${R.ativos.contab} contabilidade (${pct(R.ativos.contab,R.ativos.total)}%)`, { x:5.0, y:2.4, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
+      s.addText(`Clientes Ativos ${curLabel5}`, { x:5.0, y:2.68, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
 
-      s.addText(`${R.prev?R.prev.entradas:'-'} / ${R.cur.entradas}`, { x:5.0, y:3.1, w:4.2, h:0.45, fontSize:16, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
-      s.addText('Novos Clientes', { x:5.0, y:3.56, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
-      s.addText('Entradas por mês', { x:5.0, y:3.82, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
+      s.addText('RECEITA E NOVOS CLIENTES', { x:0.5, y:3.2, w:9, h:0.25, fontSize:9, bold:true, color:MUTED, fontFace:'Arial', charSpacing:1 });
+
+      s.addText(`${R.prev?R.prev.entradas:'-'} / ${R.cur.entradas}`, { x:0.5, y:3.5, w:4.2, h:0.45, fontSize:16, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText('Novos Clientes', { x:0.5, y:3.96, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText('Entradas por mês', { x:0.5, y:4.22, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
+
+      s.addText(`${R.ativosPrev?fmtBRL(R.ativosPrev.ticket):'-'} / ${fmtBRL(R.ativos.ticket)}`, { x:5.0, y:3.5, w:4.2, h:0.45, fontSize:16, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText('Ticket Médio', { x:5.0, y:3.96, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText('Valor médio por cliente por mês', { x:5.0, y:4.22, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
     }
 
     // Slide 7 — churn e perdas
@@ -960,7 +972,7 @@ async function exportPPTX(){
         { label:'Saídas no ano', value:`-${R.saidasAno}`, color:DANGER, sub:`Janeiro a ${MESES[R.monthIdx].toLowerCase()}` },
         { label:'Taxa de churn do mês', value:`${churnTaxa.toFixed(1)}%`, sub:`sobre a base do mês anterior (${churnBase})` },
         { label:'Taxa de churn no ano', value:`${R.churnTaxaAno.toFixed(1)}%`, sub:`sobre a base de dez/${R.y-1} (${R.ativosInicioAno.total})` }
-      ], 1.9);
+      ], 1.9, { valueSize:22 });
     }
     {
       const saidasAgg = monthlySaidasPorProduto();
