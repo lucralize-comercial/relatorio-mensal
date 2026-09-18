@@ -76,6 +76,8 @@
   .table-dark tbody tr:last-child td{ border-bottom:none; font-weight:700; }
   .table-dark th:not(:first-child), .table-dark td:not(:first-child){ text-align:center; }
   .table-dark th:first-child, .table-dark td:first-child{ text-align:left; }
+  .table-dark tr.pct-row td{ font-size:9px; color:var(--ink-3); padding-top:1px; padding-bottom:7px; }
+  .table-dark tr.metric-row td{ padding-bottom:1px; }
 
   table{ width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
   .card table{ color:#14181C; }
@@ -362,7 +364,7 @@ function funilLeadsAcumuladoAno(y, uptoMonthK){
 }
 function funilMensalAno(y){
   const out = {};
-  MESES.forEach((_,i)=>{ out[`${y}-${String(i+1).padStart(2,'0')}`] = { leads:0, ganho:0 }; });
+  MESES.forEach((_,i)=>{ out[`${y}-${String(i+1).padStart(2,'0')}`] = { leads:0, ganho:0, perdas:0 }; });
   DEALS.forEach(d=>{
     const fn = (d.dealStage && d.dealStage.funnel && d.dealStage.funnel.name) || '';
     if(FUNIS_LEAD.some(f=>fn.toLowerCase().includes(f.toLowerCase()))){
@@ -370,6 +372,9 @@ function funilMensalAno(y){
       if(createdYM && out[createdYM]) out[createdYM].leads++;
       const wonYM = d.wonAt ? monthKey(d.wonAt) : null;
       if(wonYM && out[wonYM]) out[wonYM].ganho++;
+      const lostDate = d.lostAt || d.deal_lost_at || d.lost_at || d.lostDate;
+      const lostYM = lostDate ? monthKey(lostDate) : null;
+      if(lostYM && out[lostYM]) out[lostYM].perdas++;
     }
   });
   return out;
@@ -510,26 +515,39 @@ function render(){
     const dataMes = funilMensalAno(y);
     const reunioesMes = reunioesMensalAno(y);
     const monthKeysFunil = Object.keys(dataMes).sort();
-    let rowLeads='<tr><td>Leads</td>', rowReunioes='<tr><td>Reuniões</td>', rowGanho='<tr><td>Ganho</td>', rowPct='<tr><td>%</td>';
-    let totLeads=0, totReunioes=0, totGanho=0;
+    let rowLeads='<tr class="metric-row"><td>Leads</td>';
+    let rowReunioes='<tr class="metric-row"><td>Reuniões</td>', rowReunioesPct='<tr class="pct-row"><td>%</td>';
+    let rowPerdas='<tr class="metric-row"><td>Perdas</td>', rowPerdasPct='<tr class="pct-row"><td>%</td>';
+    let rowGanho='<tr class="metric-row"><td>Ganho</td>', rowGanhoPct='<tr class="pct-row"><td>%</td>';
+    let totLeads=0, totReunioes=0, totPerdas=0, totGanho=0;
     monthKeysFunil.forEach(k=>{
       const isFuture = k > selectedMonthKey;
       const a = dataMes[k];
       if(isFuture){
-        rowLeads+='<td>-</td>'; rowReunioes+='<td>-</td>'; rowGanho+='<td>-</td>'; rowPct+='<td>-</td>';
+        rowLeads+='<td>-</td>';
+        rowReunioes+='<td>-</td>'; rowReunioesPct+='<td>-</td>';
+        rowPerdas+='<td>-</td>'; rowPerdasPct+='<td>-</td>';
+        rowGanho+='<td>-</td>'; rowGanhoPct+='<td>-</td>';
       }else{
-        totLeads+=a.leads; totGanho+=a.ganho; totReunioes+=(reunioesMes[k]||0);
-        const pctMes = a.leads ? (a.ganho/a.leads*100).toFixed(1)+'%' : '0.0%';
-        rowLeads+=`<td>${a.leads}</td>`; rowReunioes+=`<td>${reunioesMes[k]||0}</td>`; rowGanho+=`<td>${a.ganho}</td>`; rowPct+=`<td>${pctMes}</td>`;
+        const reunioes = reunioesMes[k]||0;
+        totLeads+=a.leads; totReunioes+=reunioes; totPerdas+=a.perdas; totGanho+=a.ganho;
+        const pct = (v)=> a.leads ? (v/a.leads*100).toFixed(1)+'%' : '0.0%';
+        rowLeads+=`<td>${a.leads}</td>`;
+        rowReunioes+=`<td>${reunioes}</td>`; rowReunioesPct+=`<td>${pct(reunioes)}</td>`;
+        rowPerdas+=`<td>${a.perdas}</td>`; rowPerdasPct+=`<td>${pct(a.perdas)}</td>`;
+        rowGanho+=`<td>${a.ganho}</td>`; rowGanhoPct+=`<td>${pct(a.ganho)}</td>`;
       }
     });
-    const pctTotal = totLeads ? (totGanho/totLeads*100).toFixed(1)+'%' : '0.0%';
-    rowLeads+=`<td>${totLeads}</td></tr>`; rowReunioes+=`<td>${totReunioes}</td></tr>`; rowGanho+=`<td>${totGanho}</td></tr>`; rowPct+=`<td>${pctTotal}</td></tr>`;
+    const pctTotal = (v)=> totLeads ? (v/totLeads*100).toFixed(1)+'%' : '0.0%';
+    rowLeads+=`<td>${totLeads}</td></tr>`;
+    rowReunioes+=`<td>${totReunioes}</td></tr>`; rowReunioesPct+=`<td>${pctTotal(totReunioes)}</td></tr>`;
+    rowPerdas+=`<td>${totPerdas}</td></tr>`; rowPerdasPct+=`<td>${pctTotal(totPerdas)}</td></tr>`;
+    rowGanho+=`<td>${totGanho}</td></tr>`; rowGanhoPct+=`<td>${pctTotal(totGanho)}</td></tr>`;
     return `<div class="table-dark">
       <table>
         <colgroup><col style="width:9%"><col span="${monthKeysFunil.length}">${monthKeysFunil.map(()=>'').join('')}<col style="width:9%"></colgroup>
         <thead><tr><th></th>${monthKeysFunil.map(k=>`<th>${MESES[parseInt(k.slice(5),10)-1].slice(0,3)}</th>`).join('')}<th>Total</th></tr></thead>
-        <tbody>${rowLeads}${rowReunioes}${rowGanho}${rowPct}</tbody>
+        <tbody>${rowLeads}${rowReunioes}${rowReunioesPct}${rowPerdas}${rowPerdasPct}${rowGanho}${rowGanhoPct}</tbody>
       </table>
     </div>`;
   }
@@ -912,23 +930,36 @@ async function exportPPTX(){
       const head = [{text:'', options:{fill:headFill4}}].concat(
         monthKeysFunil.map(k=>({text:MESES[parseInt(k.slice(5),10)-1].slice(0,3), options:{bold:true, color:TEAL, fill:headFill4}}))
       ).concat([{text:'Total', options:{bold:true, color:TEAL, fill:headFill4}}]);
-      let totLeads=0, totReunioes=0, totGanho=0;
-      const rowLeads=['Leads'], rowReunioes=['Reuniões'], rowGanho=['Ganho'], rowPct=['%'];
+      let totLeads=0, totReunioes=0, totPerdas=0, totGanho=0;
+      const rowLeads=['Leads'];
+      const rowReunioes=['Reuniões'], rowReunioesPct=[{text:'%', options:{fontSize:6.5, color:MUTED}}];
+      const rowPerdas=['Perdas'], rowPerdasPct=[{text:'%', options:{fontSize:6.5, color:MUTED}}];
+      const rowGanho=['Ganho'], rowGanhoPct=[{text:'%', options:{fontSize:6.5, color:MUTED}}];
+      const pctCell = (v, base)=>({ text: base?(v/base*100).toFixed(1)+'%':'0.0%', options:{fontSize:6.5, color:MUTED} });
       monthKeysFunil.forEach(k=>{
         const isFuture = k > selectedMonthKey;
         const a = dataMes[k];
-        if(isFuture){ rowLeads.push('-'); rowReunioes.push('-'); rowGanho.push('-'); rowPct.push('-'); }
-        else{
-          totLeads+=a.leads; totGanho+=a.ganho; totReunioes+=(reunioesMes[k]||0);
-          rowLeads.push(String(a.leads)); rowReunioes.push(String(reunioesMes[k]||0)); rowGanho.push(String(a.ganho));
-          rowPct.push(a.leads?(a.ganho/a.leads*100).toFixed(1)+'%':'0.0%');
+        if(isFuture){
+          rowLeads.push('-');
+          rowReunioes.push('-'); rowReunioesPct.push({text:'-', options:{fontSize:6.5, color:MUTED}});
+          rowPerdas.push('-'); rowPerdasPct.push({text:'-', options:{fontSize:6.5, color:MUTED}});
+          rowGanho.push('-'); rowGanhoPct.push({text:'-', options:{fontSize:6.5, color:MUTED}});
+        }else{
+          const reunioes = reunioesMes[k]||0;
+          totLeads+=a.leads; totReunioes+=reunioes; totPerdas+=a.perdas; totGanho+=a.ganho;
+          rowLeads.push(String(a.leads));
+          rowReunioes.push(String(reunioes)); rowReunioesPct.push(pctCell(reunioes, a.leads));
+          rowPerdas.push(String(a.perdas)); rowPerdasPct.push(pctCell(a.perdas, a.leads));
+          rowGanho.push(String(a.ganho)); rowGanhoPct.push(pctCell(a.ganho, a.leads));
         }
       });
-      rowLeads.push(String(totLeads)); rowReunioes.push(String(totReunioes)); rowGanho.push(String(totGanho));
-      rowPct.push(totLeads?(totGanho/totLeads*100).toFixed(1)+'%':'0.0%');
-      tableSlide(s, 3.25, [head, rowLeads, rowReunioes, rowGanho, rowPct], [0.6].concat(monthKeysFunil.map(()=>0.6)).concat([0.7]), { dark:true, fontSize:8 });
+      rowLeads.push(String(totLeads));
+      rowReunioes.push(String(totReunioes)); rowReunioesPct.push(pctCell(totReunioes, totLeads));
+      rowPerdas.push(String(totPerdas)); rowPerdasPct.push(pctCell(totPerdas, totLeads));
+      rowGanho.push(String(totGanho)); rowGanhoPct.push(pctCell(totGanho, totLeads));
+      tableSlide(s, 2.85, [head, rowLeads, rowReunioes, rowReunioesPct, rowPerdas, rowPerdasPct, rowGanho, rowGanhoPct], [0.6].concat(monthKeysFunil.map(()=>0.6)).concat([0.7]), { dark:true, fontSize:8 });
     }
-    s.addText('Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.', { x:0.5, y:5.0, w:9, h:0.4, fontSize:9, color:MUTED, fontFace:'Arial' });
+    s.addText('Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.', { x:0.5, y:5.15, w:9, h:0.4, fontSize:9, color:MUTED, fontFace:'Arial' });
 
     // Slide 5 — comparativo histórico (grade de saldo em cima, tabela de produto embaixo, ano inteiro)
     s = baseSlide();
