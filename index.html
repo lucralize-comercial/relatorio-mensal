@@ -233,11 +233,11 @@ function getEntradaYM_tech(r){ const f=fv(r,'field_11','Compet_x00ea_ncia','Comp
 function getSaidaYM_tech(r){ const sit=getSituacao(r); if(sit!=='INATIVO' && sit!=='BAIXADA' && sit!=='EM CANCELAMENTO') return null; const f=r['field_26']; if(!f) return null; const s=String(f).trim(); if(/^\d{2}\/\d{4}$/.test(s)) return safeYM(s); return null; }
 function getHonorario(r){ return parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0; }
 function getValorTech(r){ return parseFloat(fv(r,'Valor'))||0; }
-function getTipoTarefa(r){ return (fv(r,'Tipo_x0020_de_x0020_tarefa','Tipo_x0020_de_x0020_Tarefa','TipodeTarefa','Tipo_x0020_de_tarefa','TipoTarefa','Tipo')||'').trim().toUpperCase(); }
-function getDataAgendamento(r){ return fv(r,'Data_x0020_de_x0020_agendamento','Data_x0020_de_x0020_Agendamento','DatadeAgendamento','Data_x0020_de_agendamento','DataAgendamento'); }
+function getTipoTarefa(r){ return (fv(r,'type','Tipo')||'').trim(); }
+function getDataAgendamento(r){ return fv(r,'dueDate','createdAt'); }
 function getReuniaoYM(r){
-  const tipo = getTipoTarefa(r);
-  if(tipo!=='REUNIÃO' && tipo!=='REUNIAO') return null;
+  const tipo = getTipoTarefa(r).toLowerCase();
+  if(tipo!=='reunião' && tipo!=='reuniao' && !tipo.includes('reun') && !tipo.includes('meet')) return null;
   const v = getDataAgendamento(r);
   if(!v) return null;
   try{ const d=new Date(v); if(!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }catch{}
@@ -372,9 +372,10 @@ function funilMensalAno(y){
       if(createdYM && out[createdYM]) out[createdYM].leads++;
       const wonYM = d.wonAt ? monthKey(d.wonAt) : null;
       if(wonYM && out[wonYM]) out[wonYM].ganho++;
-      const lostDate = d.lostAt || d.deal_lost_at || d.lost_at || d.lostDate;
-      const lostYM = lostDate ? monthKey(lostDate) : null;
-      if(lostYM && out[lostYM]) out[lostYM].perdas++;
+      if(d.dealStatus && d.dealStatus.id===3 && d.lostAt){
+        const lostYM = monthKey(d.lostAt);
+        if(lostYM && out[lostYM]) out[lostYM].perdas++;
+      }
     }
   });
   return out;
