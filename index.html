@@ -216,6 +216,7 @@ const FUNIS_LEAD = ['Funil Comercial'];
 
 let DEALS = [];
 let rawContab = [], rawTech = [];
+let rawAtividades = [];
 let selectedMonthKey = null;
 let slideIndex = 0;
 let REPORT = null; // snapshot dos dados computados no último render(), usado pelo export PPTX
@@ -230,6 +231,22 @@ function getEntradaYM_tech(r){ const f=fv(r,'field_11','Compet_x00ea_ncia','Comp
 function getSaidaYM_tech(r){ const sit=getSituacao(r); if(sit!=='INATIVO' && sit!=='BAIXADA' && sit!=='EM CANCELAMENTO') return null; const f=r['field_26']; if(!f) return null; const s=String(f).trim(); if(/^\d{2}\/\d{4}$/.test(s)) return safeYM(s); return null; }
 function getHonorario(r){ return parseFloat(fv(r,'Honor_x00e1_rio','Honorário','Honorario'))||0; }
 function getValorTech(r){ return parseFloat(fv(r,'Valor'))||0; }
+function getTipoTarefa(r){ return (fv(r,'Tipo_x0020_de_x0020_tarefa','Tipo_x0020_de_x0020_Tarefa','TipodeTarefa','Tipo_x0020_de_tarefa','TipoTarefa','Tipo')||'').trim().toUpperCase(); }
+function getDataAgendamento(r){ return fv(r,'Data_x0020_de_x0020_agendamento','Data_x0020_de_x0020_Agendamento','DatadeAgendamento','Data_x0020_de_agendamento','DataAgendamento'); }
+function getReuniaoYM(r){
+  const tipo = getTipoTarefa(r);
+  if(tipo!=='REUNIÃO' && tipo!=='REUNIAO') return null;
+  const v = getDataAgendamento(r);
+  if(!v) return null;
+  try{ const d=new Date(v); if(!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }catch{}
+  return safeYM(v);
+}
+function reunioesMensalAno(y){
+  const out = {};
+  MESES.forEach((_,i)=>{ out[`${y}-${String(i+1).padStart(2,'0')}`] = 0; });
+  rawAtividades.forEach(r=>{ const ym=getReuniaoYM(r); if(ym && out[ym]!==undefined) out[ym]++; });
+  return out;
+}
 
 function monthKey(dateStr){ if(!dateStr) return null; return dateStr.slice(0,7); }
 function fmtMonthLabel(key){ const [y,m]=key.split('-'); return MESES[parseInt(m,10)-1] + ' ' + y; }
@@ -258,13 +275,15 @@ function fullMonthRange(){
 async function loadData(){
   document.getElementById('status').textContent = 'carregando…';
   try{
-    const [dealsRes, clientesRes] = await Promise.all([
+    const [dealsRes, clientesRes, atividadesRes] = await Promise.all([
       fetch(PROXY + '/deals').then(r=>r.json()).catch(()=>({data:[]})),
-      fetch(PROXY + '/clientes').then(r=>r.json())
+      fetch(PROXY + '/clientes').then(r=>r.json()),
+      fetch(PROXY + '/atividades-historico').then(r=>r.json()).catch(()=>([]))
     ]);
     DEALS = dealsRes.data || [];
     rawContab = clientesRes.contabilidade || [];
     rawTech = clientesRes.tech || [];
+    rawAtividades = Array.isArray(atividadesRes) ? atividadesRes : (atividadesRes.data || atividadesRes.atividades || atividadesRes.items || atividadesRes.value || []);
     document.getElementById('status').textContent = clientesRes.updated_at ? ('atualizado ' + new Date(clientesRes.updated_at).toLocaleString('pt-BR')) : 'sem dados ainda — clique em Atualizar';
     buildMonthOptions();
     render();
@@ -489,27 +508,28 @@ function render(){
   // Slide 4 — funil de vendas
   function funilAnoTable(){
     const dataMes = funilMensalAno(y);
+    const reunioesMes = reunioesMensalAno(y);
     const monthKeysFunil = Object.keys(dataMes).sort();
-    let rowLeads='<tr><td>Leads</td>', rowGanho='<tr><td>Ganho</td>', rowPct='<tr><td>%</td>';
-    let totLeads=0, totGanho=0;
+    let rowLeads='<tr><td>Leads</td>', rowReunioes='<tr><td>Reuniões</td>', rowGanho='<tr><td>Ganho</td>', rowPct='<tr><td>%</td>';
+    let totLeads=0, totReunioes=0, totGanho=0;
     monthKeysFunil.forEach(k=>{
       const isFuture = k > selectedMonthKey;
       const a = dataMes[k];
       if(isFuture){
-        rowLeads+='<td>-</td>'; rowGanho+='<td>-</td>'; rowPct+='<td>-</td>';
+        rowLeads+='<td>-</td>'; rowReunioes+='<td>-</td>'; rowGanho+='<td>-</td>'; rowPct+='<td>-</td>';
       }else{
-        totLeads+=a.leads; totGanho+=a.ganho;
+        totLeads+=a.leads; totGanho+=a.ganho; totReunioes+=(reunioesMes[k]||0);
         const pctMes = a.leads ? (a.ganho/a.leads*100).toFixed(1)+'%' : '0.0%';
-        rowLeads+=`<td>${a.leads}</td>`; rowGanho+=`<td>${a.ganho}</td>`; rowPct+=`<td>${pctMes}</td>`;
+        rowLeads+=`<td>${a.leads}</td>`; rowReunioes+=`<td>${reunioesMes[k]||0}</td>`; rowGanho+=`<td>${a.ganho}</td>`; rowPct+=`<td>${pctMes}</td>`;
       }
     });
     const pctTotal = totLeads ? (totGanho/totLeads*100).toFixed(1)+'%' : '0.0%';
-    rowLeads+=`<td>${totLeads}</td></tr>`; rowGanho+=`<td>${totGanho}</td></tr>`; rowPct+=`<td>${pctTotal}</td></tr>`;
+    rowLeads+=`<td>${totLeads}</td></tr>`; rowReunioes+=`<td>${totReunioes}</td></tr>`; rowGanho+=`<td>${totGanho}</td></tr>`; rowPct+=`<td>${pctTotal}</td></tr>`;
     return `<div class="table-dark">
       <table>
         <colgroup><col style="width:9%"><col span="${monthKeysFunil.length}">${monthKeysFunil.map(()=>'').join('')}<col style="width:9%"></colgroup>
         <thead><tr><th></th>${monthKeysFunil.map(k=>`<th>${MESES[parseInt(k.slice(5),10)-1].slice(0,3)}</th>`).join('')}<th>Total</th></tr></thead>
-        <tbody>${rowLeads}${rowGanho}${rowPct}</tbody>
+        <tbody>${rowLeads}${rowReunioes}${rowGanho}${rowPct}</tbody>
       </table>
     </div>`;
   }
@@ -886,28 +906,29 @@ async function exportPPTX(){
     ], 1.85, { valueSize:22 });
     {
       const dataMes = funilMensalAno(R.y);
+      const reunioesMes = reunioesMensalAno(R.y);
       const monthKeysFunil = Object.keys(dataMes).sort();
       const headFill4 = { color: '161D35' };
       const head = [{text:'', options:{fill:headFill4}}].concat(
         monthKeysFunil.map(k=>({text:MESES[parseInt(k.slice(5),10)-1].slice(0,3), options:{bold:true, color:TEAL, fill:headFill4}}))
       ).concat([{text:'Total', options:{bold:true, color:TEAL, fill:headFill4}}]);
-      let totLeads=0, totGanho=0;
-      const rowLeads=['Leads'], rowGanho=['Ganho'], rowPct=['%'];
+      let totLeads=0, totReunioes=0, totGanho=0;
+      const rowLeads=['Leads'], rowReunioes=['Reuniões'], rowGanho=['Ganho'], rowPct=['%'];
       monthKeysFunil.forEach(k=>{
         const isFuture = k > selectedMonthKey;
         const a = dataMes[k];
-        if(isFuture){ rowLeads.push('-'); rowGanho.push('-'); rowPct.push('-'); }
+        if(isFuture){ rowLeads.push('-'); rowReunioes.push('-'); rowGanho.push('-'); rowPct.push('-'); }
         else{
-          totLeads+=a.leads; totGanho+=a.ganho;
-          rowLeads.push(String(a.leads)); rowGanho.push(String(a.ganho));
+          totLeads+=a.leads; totGanho+=a.ganho; totReunioes+=(reunioesMes[k]||0);
+          rowLeads.push(String(a.leads)); rowReunioes.push(String(reunioesMes[k]||0)); rowGanho.push(String(a.ganho));
           rowPct.push(a.leads?(a.ganho/a.leads*100).toFixed(1)+'%':'0.0%');
         }
       });
-      rowLeads.push(String(totLeads)); rowGanho.push(String(totGanho));
+      rowLeads.push(String(totLeads)); rowReunioes.push(String(totReunioes)); rowGanho.push(String(totGanho));
       rowPct.push(totLeads?(totGanho/totLeads*100).toFixed(1)+'%':'0.0%');
-      tableSlide(s, 3.25, [head, rowLeads, rowGanho, rowPct], [0.6].concat(monthKeysFunil.map(()=>0.6)).concat([0.7]), { dark:true, fontSize:8 });
+      tableSlide(s, 3.25, [head, rowLeads, rowReunioes, rowGanho, rowPct], [0.6].concat(monthKeysFunil.map(()=>0.6)).concat([0.7]), { dark:true, fontSize:8 });
     }
-    s.addText('Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.', { x:0.5, y:4.9, w:9, h:0.4, fontSize:9, color:MUTED, fontFace:'Arial' });
+    s.addText('Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.', { x:0.5, y:5.0, w:9, h:0.4, fontSize:9, color:MUTED, fontFace:'Arial' });
 
     // Slide 5 — comparativo histórico (grade de saldo em cima, tabela de produto embaixo, ano inteiro)
     s = baseSlide();
