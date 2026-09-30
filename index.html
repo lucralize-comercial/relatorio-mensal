@@ -895,7 +895,7 @@ async function exportPPTX(){
       s.addTable(rows, { x:0.5, y, w:9, colW:colWidths, fontSize:opts.fontSize||10, fontFace:'Arial',
         color: dark ? WHITE : '14181C',
         fill: dark ? {color:NAVY} : {color:WHITE},
-        border: {type:'solid', color: dark ? '2A3350' : 'E4E8EB', pt:0.5}, autoPage:false });
+        border: {type:'solid', color: dark ? '2A3350' : 'E4E8EB', pt:0.5}, autoPage:false, margin: opts.margin!==undefined ? opts.margin : 0.05 });
     }
 
     // Slide 1 — capa
@@ -936,7 +936,7 @@ async function exportPPTX(){
         { label:'Em cancelamento', value:String(R.emCancelamento), color: R.emCancelamento>0?DANGER:WHITE }
       ], 3.45);
       [bullet1, bullet2, bullet3].forEach((b,i)=>{
-        s.addText(`•  ${b}`, { x:0.5, y:4.75+i*0.3, w:9, h:0.3, fontSize:10.5, color:WHITE, fontFace:'Arial' });
+        s.addText(`•  ${b}`, { x:0.5, y:4.48+i*0.28, w:9, h:0.26, fontSize:9.8, color:WHITE, fontFace:'Arial', margin:0 });
       });
     }
 
@@ -972,7 +972,7 @@ async function exportPPTX(){
       { label:'Fechamentos no ano', value:String(R.funilAno.fechamentos), sub:`Conversão média de ${R.funilAno.conversao.toFixed(0)}%` },
       { label:`Leads em ${MESES[R.monthIdx]}`, value:String(R.funil.leads), sub:`${R.funilAno.leads?(R.funil.leads/R.funilAno.leads*100).toFixed(1):'0.0'}% do total do ano` },
       { label:`Fechamentos em ${MESES[R.monthIdx]}`, value:String(R.funil.fechamentos), sub:`Conversão do mês: ${R.funil.conversao.toFixed(1)}%` }
-    ], 1.85, { valueSize:22 });
+    ], 1.82, { valueSize:22, subSize:8.2 });
     {
       const dataMes = funilMensalAno(R.y);
       const reunioesMes = reunioesMensalAno(R.y);
@@ -1008,9 +1008,9 @@ async function exportPPTX(){
       rowReunioes.push(String(totReunioes)); rowReunioesPct.push(pctCell(totReunioes, totLeads));
       rowPerdas.push(String(totPerdas)); rowPerdasPct.push(pctCell(totPerdas, totLeads));
       rowGanho.push(String(totGanho)); rowGanhoPct.push(pctCell(totGanho, totLeads));
-      tableSlide(s, 2.85, [head, rowLeads, rowReunioes, rowReunioesPct, rowPerdas, rowPerdasPct, rowGanho, rowGanhoPct], [0.6].concat(monthKeysFunil.map(()=>0.6)).concat([0.7]), { dark:true, fontSize:8 });
+      tableSlide(s, 3.12, [head, rowLeads, rowReunioes, rowReunioesPct, rowPerdas, rowPerdasPct, rowGanho, rowGanhoPct], [0.75].concat(monthKeysFunil.map(()=>0.57)).concat([0.7]), { dark:true, fontSize:7.2, margin:0.03 });
     }
-    s.addText('Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.', { x:0.5, y:5.15, w:9, h:0.4, fontSize:9, color:MUTED, fontFace:'Arial' });
+    s.addText('Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.', { x:0.5, y:5.18, w:9, h:0.24, fontSize:7.8, color:MUTED, fontFace:'Arial', margin:0 });
 
     // Slide 5 — comparativo histórico (grade de saldo em cima, tabela de produto embaixo, ano inteiro)
     s = baseSlide();
@@ -1032,9 +1032,10 @@ async function exportPPTX(){
       ).concat([{text:'Total', options:{bold:true, color:TEAL, fill:headFillP7}}]);
       let totTech=0, totPmes=0;
       const rowTech=['Lucralize Tech'], rowPmes=['Contabilidade PMEs'];
-      R.anoKeys.forEach(k=>{ const a=R.agg[k]||{tech:0,pmes:0}; totTech+=a.tech; totPmes+=a.pmes; rowTech.push(String(a.tech)); rowPmes.push(String(a.pmes)); });
-      rowTech.push(String(totTech)); rowPmes.push(String(totPmes));
-      tableSlide(s, 3.35, [head, rowTech, rowPmes], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:8 });
+      const rowTotal=['Total'];
+      R.anoKeys.forEach(k=>{ const a=R.agg[k]||{tech:0,pmes:0}; totTech+=a.tech; totPmes+=a.pmes; rowTech.push(String(a.tech)); rowPmes.push(String(a.pmes)); rowTotal.push(String(a.tech+a.pmes)); });
+      rowTech.push(String(totTech)); rowPmes.push(String(totPmes)); rowTotal.push(String(totTech+totPmes));
+      tableSlide(s, 3.35, [head, rowTech, rowPmes, rowTotal], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:7.8, margin:0.03 });
     }
 
     // Slide 6 — novos clientes e ticket médio
@@ -1043,23 +1044,23 @@ async function exportPPTX(){
       const curLabel5 = MESES[R.monthIdx];
       header(s, 'Slide 6', 'Novos clientes e ticket médio', `Como ${curLabel5} entrou para a base, comparado a ${R.prevLabel || 'o mês anterior'}.`);
 
-      s.addText('BASE DE CLIENTES', { x:0.5, y:1.45, w:9, h:0.25, fontSize:9, bold:true, color:MUTED, fontFace:'Arial', charSpacing:1 });
+      s.addText('BASE DE CLIENTES', { x:0.5, y:1.62, w:9, h:0.22, fontSize:8.5, bold:true, color:MUTED, fontFace:'Arial', charSpacing:1, margin:0 });
 
-      s.addText(R.ativosPrev ? String(R.ativosPrev.total) : '-', { x:0.5, y:1.78, w:4.2, h:0.65, fontSize:30, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
-      s.addText(R.ativosPrev ? `${R.ativosPrev.tech} tech (${pct(R.ativosPrev.tech,R.ativosPrev.total)}%) e ${R.ativosPrev.contab} contabilidade (${pct(R.ativosPrev.contab,R.ativosPrev.total)}%)` : '', { x:0.5, y:2.4, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
-      s.addText(`Clientes Ativos ${R.prevLabel||''}`, { x:0.5, y:2.68, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText(R.ativosPrev ? String(R.ativosPrev.total) : '-', { x:0.5, y:1.92, w:4.2, h:0.58, fontSize:28, bold:true, color:WHITE, align:'center', fontFace:'Arial', margin:0 });
+      s.addText(R.ativosPrev ? `${R.ativosPrev.tech} tech (${pct(R.ativosPrev.tech,R.ativosPrev.total)}%) e ${R.ativosPrev.contab} contabilidade (${pct(R.ativosPrev.contab,R.ativosPrev.total)}%)` : '', { x:0.5, y:2.48, w:4.2, h:0.24, fontSize:8.2, color:MUTED, align:'center', fontFace:'Arial', margin:0 });
+      s.addText(`Clientes Ativos ${R.prevLabel||''}`, { x:0.5, y:2.74, w:4.2, h:0.26, fontSize:10, bold:true, color:WHITE, align:'center', fontFace:'Arial', margin:0 });
 
-      s.addText(String(R.ativos.total), { x:5.0, y:1.78, w:4.2, h:0.65, fontSize:30, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
-      s.addText(`${R.ativos.tech} tech (${pct(R.ativos.tech,R.ativos.total)}%) e ${R.ativos.contab} contabilidade (${pct(R.ativos.contab,R.ativos.total)}%)`, { x:5.0, y:2.4, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
-      s.addText(`Clientes Ativos ${curLabel5}`, { x:5.0, y:2.68, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText(String(R.ativos.total), { x:5.0, y:1.92, w:4.2, h:0.58, fontSize:28, bold:true, color:WHITE, align:'center', fontFace:'Arial', margin:0 });
+      s.addText(`${R.ativos.tech} tech (${pct(R.ativos.tech,R.ativos.total)}%) e ${R.ativos.contab} contabilidade (${pct(R.ativos.contab,R.ativos.total)}%)`, { x:5.0, y:2.48, w:4.2, h:0.24, fontSize:8.2, color:MUTED, align:'center', fontFace:'Arial', margin:0 });
+      s.addText(`Clientes Ativos ${curLabel5}`, { x:5.0, y:2.74, w:4.2, h:0.26, fontSize:10, bold:true, color:WHITE, align:'center', fontFace:'Arial', margin:0 });
 
-      s.addText('RECEITA E NOVOS CLIENTES', { x:0.5, y:3.2, w:9, h:0.25, fontSize:9, bold:true, color:MUTED, fontFace:'Arial', charSpacing:1 });
+      s.addText('RECEITA E NOVOS CLIENTES', { x:0.5, y:3.22, w:9, h:0.22, fontSize:8.5, bold:true, color:MUTED, fontFace:'Arial', charSpacing:1, margin:0 });
 
-      s.addText(`${R.prev?R.prev.entradas:'-'} / ${R.cur.entradas}`, { x:0.5, y:3.5, w:4.2, h:0.45, fontSize:16, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText(`${R.prev?R.prev.entradas:'-'} / ${R.cur.entradas}`, { x:0.5, y:3.55, w:4.2, h:0.4, fontSize:16, bold:true, color:WHITE, align:'center', fontFace:'Arial', margin:0 });
       s.addText('Novos Clientes', { x:0.5, y:3.96, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
       s.addText('Entradas por mês', { x:0.5, y:4.22, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
 
-      s.addText(`${R.ativosPrev?fmtBRL(R.ativosPrev.ticket):'-'} / ${fmtBRL(R.ativos.ticket)}`, { x:5.0, y:3.5, w:4.2, h:0.45, fontSize:16, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
+      s.addText(`${R.ativosPrev?fmtBRL(R.ativosPrev.ticket):'-'} / ${fmtBRL(R.ativos.ticket)}`, { x:5.0, y:3.55, w:4.2, h:0.4, fontSize:16, bold:true, color:WHITE, align:'center', fontFace:'Arial', margin:0 });
       s.addText('Ticket Médio', { x:5.0, y:3.96, w:4.2, h:0.3, fontSize:10.5, bold:true, color:WHITE, align:'center', fontFace:'Arial' });
       s.addText('Valor médio por cliente por mês', { x:5.0, y:4.22, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
     }
@@ -1075,7 +1076,7 @@ async function exportPPTX(){
         { label:'Saídas no ano', value:`-${R.saidasAno}`, color:DANGER, sub:`Janeiro a ${MESES[R.monthIdx].toLowerCase()}` },
         { label:'Taxa de churn do mês', value:`${churnTaxa.toFixed(1)}%`, sub:`sobre a base do mês anterior (${churnBase})` },
         { label:'Taxa de churn no ano', value:`${R.churnTaxaAno.toFixed(1)}%`, sub:`sobre a base de dez/${R.y-1} (${R.ativosInicioAno.total})` }
-      ], 1.9, { valueSize:22 });
+      ], 1.82, { valueSize:22, subSize:8.0 });
     }
     {
       const saidasAgg = monthlySaidasPorProduto();
@@ -1105,13 +1106,13 @@ async function exportPPTX(){
       });
       rowBase.push(String(R.ativos.total));
       rowChurn.push(`${R.churnTaxaAno.toFixed(1)}%`);
-      tableSlide(s, 2.75, [head, rowTech, rowPmes, rowTotal, rowPct, rowBase, rowChurn], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:7 });
+      tableSlide(s, 3.08, [head, rowTech, rowPmes, rowTotal, rowPct, rowBase, rowChurn], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:6.5, margin:0.03 });
     }
     {
       const churnBaseNote = R.ativosPrev ? R.ativosPrev.total : R.ativos.total;
       const churnTaxaNote = churnBaseNote ? (R.cur.saidas/churnBaseNote*100) : 0;
-      s.addText(`Taxa de churn do mês = saídas de ${MESES[R.monthIdx]} ÷ base de ${R.prevLabel||'mês anterior'} (${R.cur.saidas} ÷ ${churnBaseNote} = ${churnTaxaNote.toFixed(1)}%).`, { x:0.5, y:5.05, w:9, h:0.22, fontSize:7.5, color:MUTED, fontFace:'Arial' });
-      s.addText(`Taxa de churn no ano = saídas de janeiro a ${MESES[R.monthIdx].toLowerCase()} ÷ base de dezembro/${R.y-1} (${R.saidasAno} ÷ ${R.ativosInicioAno.total} = ${R.churnTaxaAno.toFixed(1)}%).`, { x:0.5, y:5.27, w:9, h:0.22, fontSize:7.5, color:MUTED, fontFace:'Arial' });
+      s.addText(`Taxa de churn do mês = saídas de ${MESES[R.monthIdx]} ÷ base de ${R.prevLabel||'mês anterior'} (${R.cur.saidas} ÷ ${churnBaseNote} = ${churnTaxaNote.toFixed(1)}%).`, { x:0.5, y:5.02, w:9, h:0.18, fontSize:7.1, color:MUTED, fontFace:'Arial', margin:0 });
+      s.addText(`Taxa de churn no ano = saídas de janeiro a ${MESES[R.monthIdx].toLowerCase()} ÷ base de dezembro/${R.y-1} (${R.saidasAno} ÷ ${R.ativosInicioAno.total} = ${R.churnTaxaAno.toFixed(1)}%).`, { x:0.5, y:5.23, w:9, h:0.18, fontSize:7.1, color:MUTED, fontFace:'Arial', margin:0 });
     }
 
     // Slide 8 — próximos passos (texto livre, salvo no navegador por mês)
@@ -1131,7 +1132,7 @@ async function exportPPTX(){
     s.addText('Obrigado', { x:0.5, y:2.5, w:9, h:0.7, fontSize:34, color:WHITE, bold:true, fontFace:'Arial' });
     s.addText('Dúvidas ou sugestões, é só chamar.', { x:0.5, y:3.2, w:9, h:0.4, fontSize:14, color:TEAL, fontFace:'Arial' });
 
-    await pptx.writeFile({ fileName: `Resultados_${R.monthLabel.replace(' ','_')}.pptx` });
+    await pptx.writeFile({ fileName: `Relatório Comercial ${R.monthLabel}.pptx` });
   }catch(e){
     console.error(e);
     alert('Erro ao gerar o PPTX — confira o console.');
@@ -1160,7 +1161,7 @@ document.getElementById('prevBtn').addEventListener('click', ()=>goToSlide(slide
 document.getElementById('nextBtn').addEventListener('click', ()=>goToSlide(slideIndex+1));
 document.getElementById('printBtn').addEventListener('click', ()=>{
   const prevTitle = document.title;
-  if(REPORT) document.title = `Resultados_${REPORT.monthLabel.replace(' ','_')}`;
+  if(REPORT) document.title = `Relatório Comercial ${REPORT.monthLabel}`;
   window.print();
   document.title = prevTitle;
 });
