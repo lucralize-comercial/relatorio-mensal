@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026-09-30-v17-polish-cards -->
+<!-- build: 2026-09-30-v18-inline-icons -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
@@ -213,14 +213,16 @@
   .liz-section-title{ font-size:13px; color:#fff; font-weight:700; margin:0 0 4px; }
   .liz-steps{ display:flex; gap:14px; margin:0 0 6px; }
   .liz-step{ flex:1; text-align:left; }
-  .liz-step-icon{ width:24px;height:24px;border-radius:50%;border:1.5px solid var(--teal); color:var(--teal); display:flex; align-items:center; justify-content:center; margin-bottom:4px; font-size:11px; }
-  .liz-step h4{ font-size:11.5px; margin:0 0 2px; color:#fff; }
+  .liz-step-head{ display:flex; align-items:center; gap:8px; margin-bottom:2px; }
+  .liz-step-icon{ width:24px;height:24px;border-radius:50%;border:1.5px solid var(--teal); color:var(--teal); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px; }
+  .liz-step h4{ font-size:11.5px; margin:0; color:#fff; }
   .liz-step p{ font-size:9.5px; color:var(--ink-2); margin:0; line-height:1.25; }
   .liz-cadencia-sub{ font-size:10px; color:var(--ink-2); margin:0 0 2px; }
   .liz-cadencia-sub b{ color:#fff; }
   .liz-timeline{ display:flex; gap:10px; margin-bottom:6px; }
   .liz-tl-item{ flex:1; text-align:left; }
-  .liz-tl-dot{ width:7px;height:7px;border-radius:50%;background:var(--line); margin-bottom:3px; }
+  .liz-tl-head{ display:flex; align-items:center; gap:5px; margin-bottom:2px; }
+  .liz-tl-dot{ width:7px;height:7px;border-radius:50%;background:var(--line); flex-shrink:0; }
   .liz-tl-dot.active{ background:var(--teal); }
   .liz-tl-item .d{ font-size:9.5px; color:var(--danger); font-weight:700; }
   .liz-tl-item h5{ font-size:10.5px; margin:2px 0 2px; color:#fff; }
@@ -973,21 +975,21 @@ function render(){
 
     <div class="liz-section-title">Como ela trabalha</div>
     <div class="liz-steps">
-      <div class="liz-step"><div class="liz-step-icon">▽</div><h4>Filtra</h4><p>Tira quem já é cliente ou pediu para sair</p></div>
-      <div class="liz-step"><div class="liz-step-icon">➤</div><h4>Aborda</h4><p>Segue a cadência por e-mail e WhatsApp</p></div>
-      <div class="liz-step"><div class="liz-step-icon">✓</div><h4>Qualifica</h4><p>Entende cenário, faturamento e momento do lead</p></div>
-      <div class="liz-step"><div class="liz-step-icon">▤</div><h4>Agenda</h4><p>Marca a reunião no Teams e entrega o resumo</p></div>
+      <div class="liz-step"><div class="liz-step-head"><div class="liz-step-icon">▽</div><h4>Filtra</h4></div><p>Tira quem já é cliente ou pediu para sair</p></div>
+      <div class="liz-step"><div class="liz-step-head"><div class="liz-step-icon">➤</div><h4>Aborda</h4></div><p>Segue a cadência por e-mail e WhatsApp</p></div>
+      <div class="liz-step"><div class="liz-step-head"><div class="liz-step-icon">✓</div><h4>Qualifica</h4></div><p>Entende cenário, faturamento e momento do lead</p></div>
+      <div class="liz-step"><div class="liz-step-head"><div class="liz-step-icon">▤</div><h4>Agenda</h4></div><p>Marca a reunião no Teams e entrega o resumo</p></div>
     </div>
 
     <div class="liz-section-title">Cadência</div>
     <p class="liz-cadencia-sub"><b>6 toques em 24 dias</b>, cada um com um motivo diferente</p>
     <div class="liz-timeline">
-      <div class="liz-tl-item"><div class="liz-tl-dot"></div><span class="d">D0</span><h5>Apresentação</h5><p>Quem somos e por que o contato</p><span class="liz-tl-chan">✉ E-mail</span></div>
-      <div class="liz-tl-item"><div class="liz-tl-dot active"></div><span class="d">D3</span><h5>Abordagem</h5><p>Mensagem curta, puxando conversa</p><span class="liz-tl-chan">◔ WhatsApp</span></div>
-      <div class="liz-tl-item"><div class="liz-tl-dot"></div><span class="d">D7</span><h5>Dor</h5><p>Um problema comum do perfil</p><span class="liz-tl-chan">✉ E-mail</span></div>
-      <div class="liz-tl-item"><div class="liz-tl-dot active"></div><span class="d">D11</span><h5>Pergunta</h5><p>"Faz sentido?" com um material útil</p><span class="link">📄 Guia do CNAE certo</span><span class="liz-tl-chan">◔ WhatsApp</span></div>
-      <div class="liz-tl-item"><div class="liz-tl-dot"></div><span class="d">D17</span><h5>Prova</h5><p>Benefício ou case de cliente</p><span class="liz-tl-chan">✉ E-mail</span></div>
-      <div class="liz-tl-item"><div class="liz-tl-dot active"></div><span class="d">D24</span><h5>Encerramento</h5><p>Porta aberta, deixando um presente</p><span class="link">🧮 Calculadora de impostos</span><span class="liz-tl-chan">◔ WhatsApp</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-head"><span class="liz-tl-dot"></span><span class="d">D0</span></div><h5>Apresentação</h5><p>Quem somos e por que o contato</p><span class="liz-tl-chan">✉ E-mail</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-head"><span class="liz-tl-dot active"></span><span class="d">D3</span></div><h5>Abordagem</h5><p>Mensagem curta, puxando conversa</p><span class="liz-tl-chan">◔ WhatsApp</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-head"><span class="liz-tl-dot"></span><span class="d">D7</span></div><h5>Dor</h5><p>Um problema comum do perfil</p><span class="liz-tl-chan">✉ E-mail</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-head"><span class="liz-tl-dot active"></span><span class="d">D11</span></div><h5>Pergunta</h5><p>"Faz sentido?" com um material útil</p><span class="link">📄 Guia do CNAE certo</span><span class="liz-tl-chan">◔ WhatsApp</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-head"><span class="liz-tl-dot"></span><span class="d">D17</span></div><h5>Prova</h5><p>Benefício ou case de cliente</p><span class="liz-tl-chan">✉ E-mail</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-head"><span class="liz-tl-dot active"></span><span class="d">D24</span></div><h5>Encerramento</h5><p>Porta aberta, deixando um presente</p><span class="link">🧮 Calculadora de impostos</span><span class="liz-tl-chan">◔ WhatsApp</span></div>
     </div>
     <p class="liz-foot">Respondeu, a Liz assume a conversa. Sem resposta, volta em 60 a 90 dias com um motivo novo.</p>
 
