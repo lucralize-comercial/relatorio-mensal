@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026-09-30-v12-removed-temp-slides -->
+<!-- build: 2026-09-30-v13-churn-no-scroll -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
@@ -82,7 +82,10 @@
   .card table{ table-layout:auto; width:100%; }
   .card + .card{ margin-top:10px; }
 
-  .table-dark{ background:var(--navy-2); border-radius:10px; padding:0; overflow-x:auto; border:1px solid var(--line); -webkit-overflow-scrolling:touch; }
+  .table-dark{ background:var(--navy-2); border-radius:10px; padding:0; overflow-x:auto; overflow-y:hidden; border:1px solid var(--line); -webkit-overflow-scrolling:touch; }
+  .table-dark.compact thead th{ font-size:10.5px; padding:5px 9px; }
+  .table-dark.compact td{ font-size:10.5px; padding:5px 9px; }
+  .table-dark.compact .heat-badge{ font-size:7px; margin-top:1px; }
   .table-dark table{ color:#fff; table-layout:auto; width:100%; }
   .table-dark thead th{ background:rgba(255,255,255,.05); color:var(--teal); font-weight:700; font-size:14px; text-transform:none; padding:10px 14px; border-bottom:1px solid var(--line); }
   .table-dark td{ padding:10px 14px; border-bottom:1px solid var(--line); border-top:none; color:#fff; font-size:15px; }
@@ -828,7 +831,7 @@ function render(){
     let rowChurn = '<tr><td>Churn</td>';
     churnVals.forEach(v=>{ rowChurn += redCell(v,churnVals,'%'); });
     rowChurn += `<td>${churnTaxaAno.toFixed(1)}%</td></tr>`;
-    return `<div class="table-dark">
+    return `<div class="table-dark compact">
       <table>
         <colgroup><col style="width:20%"><col span="${keys.length}">${keys.map(()=>'').join('')}<col style="width:10%"></colgroup>
         <thead><tr><th>Produto</th>${keys.map(k=>`<th>${MESES[parseInt(k.slice(5),10)-1].slice(0,3)}</th>`).join('')}<th>Total</th></tr></thead>
