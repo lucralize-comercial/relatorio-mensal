@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026-09-30-v13-churn-no-scroll -->
+<!-- build: 2026-09-30-v14-liz-estrutura-horizontal -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
@@ -191,6 +191,81 @@
     .slide-grid{ grid-template-columns:1fr; }
     .stage-wrap.wide{ max-width:960px; }
   }
+  /* ⚠ TEMPORÁRIO — estilos dos slides "Liz" e "Estrutura comercial" (só para
+     a apresentação de setembro/2026, remover junto com os slides depois). */
+  .liz-top{ display:flex; gap:28px; margin-bottom:8px; }
+  .liz-left{ flex:1; min-width:0; }
+  .liz-left h1.big{ font-family:'Manrope',sans-serif; font-size:52px; color:#fff; margin:0 0 10px; font-weight:800; line-height:1; }
+  .liz-left p.desc{ font-size:13.5px; color:var(--ink-2); line-height:1.5; margin:0 0 10px; max-width:400px; }
+  .liz-tone{ font-size:11.5px; color:var(--ink-2); margin-bottom:10px; }
+  .liz-tone b{ color:#fff; }
+  .liz-tags{ display:flex; gap:8px; }
+  .liz-tag{ font-size:10.5px; padding:4px 10px; border-radius:20px; background:rgba(146,220,229,.12); color:var(--teal); border:1px solid rgba(146,220,229,.3); }
+  .liz-tag.dashed{ background:transparent; border-style:dashed; color:var(--ink-2); border-color:var(--line); }
+  .liz-chat{ flex:0 0 320px; background:var(--navy-2); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .liz-chat-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .liz-chat-head .who{ display:flex; gap:7px; align-items:center; }
+  .liz-chat-avatar{ width:24px;height:24px;border-radius:50%;background:rgba(146,220,229,.15);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700; }
+  .liz-chat-name{ font-size:11.5px; font-weight:700; color:#fff; }
+  .liz-chat-sub{ font-size:9.5px; color:var(--ink-3); }
+  .liz-chat-badge{ font-size:8.5px; background:rgba(146,220,229,.12); color:var(--teal); padding:3px 7px; border-radius:10px; white-space:nowrap; }
+  .liz-bubble{ background:rgba(29,158,117,.14); border:1px solid rgba(29,158,117,.25); border-radius:10px; padding:9px 11px; font-size:10.5px; color:#fff; line-height:1.4; margin-bottom:7px; }
+  .liz-section-title{ font-size:14px; color:#fff; font-weight:700; margin:0 0 6px; }
+  .liz-steps{ display:flex; gap:14px; margin:0 0 10px; }
+  .liz-step{ flex:1; text-align:left; }
+  .liz-step-icon{ width:30px;height:30px;border-radius:50%;border:1.5px solid var(--teal); color:var(--teal); display:flex; align-items:center; justify-content:center; margin-bottom:6px; font-size:13px; }
+  .liz-step h4{ font-size:11.5px; margin:0 0 2px; color:#fff; }
+  .liz-step p{ font-size:9.5px; color:var(--ink-2); margin:0; line-height:1.25; }
+  .liz-cadencia-sub{ font-size:11px; color:var(--ink-2); margin:0 0 3px; }
+  .liz-cadencia-sub b{ color:#fff; }
+  .liz-timeline{ display:flex; gap:10px; margin-bottom:6px; }
+  .liz-tl-item{ flex:1; text-align:left; }
+  .liz-tl-dot{ width:8px;height:8px;border-radius:50%;background:var(--line); margin-bottom:5px; }
+  .liz-tl-dot.active{ background:var(--teal); }
+  .liz-tl-item .d{ font-size:9.5px; color:var(--danger); font-weight:700; }
+  .liz-tl-item h5{ font-size:10.5px; margin:2px 0 2px; color:#fff; }
+  .liz-tl-item p{ font-size:9px; color:var(--ink-2); margin:0 0 4px; line-height:1.25; }
+  .liz-tl-item .link{ font-size:8.5px; color:var(--danger); display:block; margin-bottom:4px; }
+  .liz-tl-chan{ font-size:8.5px; background:rgba(255,255,255,.06); color:var(--ink-2); padding:2px 6px; border-radius:8px; display:inline-block; }
+  .liz-foot{ font-size:10.5px; color:var(--ink-3); margin:2px 0 5px; }
+  .liz-bottom{ display:flex; gap:20px; }
+  .liz-profile{ flex:1; background:var(--navy-2); border:1px solid var(--line); border-radius:12px; padding:10px 14px; }
+  .liz-profile h4{ font-size:13px; margin:0 0 3px; color:#fff; }
+  .liz-profile .sub{ font-size:10px; color:var(--ink-2); margin-bottom:9px; }
+  .liz-profile-active{ background:rgba(29,158,117,.12); border:1px solid rgba(29,158,117,.3); border-radius:8px; padding:9px 11px; }
+  .liz-profile-active .tag{ font-size:8.5px; color:var(--success); margin-bottom:2px; }
+  .liz-profile-active .name{ font-size:14px; font-weight:700; color:#fff; margin-bottom:5px; }
+  .liz-profile-row{ display:flex; gap:8px; font-size:10px; margin-bottom:3px; }
+  .liz-profile-row .k{ color:var(--teal); width:52px; flex-shrink:0; }
+  .liz-profile-row .v{ color:var(--ink-2); }
+  .liz-rules{ flex:1; }
+  .liz-rules h4{ font-size:13px; margin:0 0 9px; color:#fff; }
+  .liz-rule{ display:flex; gap:8px; margin-bottom:7px; }
+  .liz-rule .ic{ color:var(--danger); font-size:12px; }
+  .liz-rule .t{ font-size:10.5px; color:#fff; font-weight:600; }
+  .liz-rule .d{ font-size:9px; color:var(--ink-2); }
+
+  .flow-wrap{ display:flex; align-items:stretch; gap:10px; flex:1; }
+  .flow-arrow{ display:flex; align-items:center; color:var(--ink-3); font-size:20px; }
+  .flow-card{ flex:1; border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; }
+  .flow-card.gray{ background:var(--navy-2); border:1px solid var(--line); }
+  .flow-card.coral{ background:rgba(247,38,66,.1); border:1px solid rgba(247,38,66,.3); }
+  .flow-card.teal{ background:rgba(146,220,229,.1); border:1px solid rgba(146,220,229,.3); }
+  .flow-eyebrow{ font-size:10px; margin:0 0 3px; opacity:.8; }
+  .flow-name{ font-size:16px; font-weight:700; color:#fff; margin:0 0 2px; }
+  .flow-role{ font-size:11px; color:var(--ink-2); margin-bottom:10px; }
+  .flow-bullet{ font-size:11px; margin-bottom:5px; color:var(--ink-2); }
+  .flow-card.coral .flow-eyebrow, .flow-card.coral .flow-bullet{ color:var(--danger); }
+  .flow-card.teal .flow-eyebrow, .flow-card.teal .flow-bullet{ color:var(--teal); }
+  .flow-stack{ flex:1.3; display:flex; flex-direction:column; gap:10px; }
+  .flow-mini{ flex:1; background:rgba(146,220,229,.1); border:1px solid rgba(146,220,229,.3); border-radius:10px; padding:10px 14px; display:flex; flex-direction:column; justify-content:center; }
+  .flow-mini-head{ display:flex; justify-content:space-between; align-items:center; }
+  .flow-mini-head .name{ font-size:13px; font-weight:700; color:#fff; }
+  .flow-mini-head .badge{ font-size:9px; color:var(--teal); }
+  .flow-mini p{ font-size:10px; color:var(--teal); margin:3px 0 0; }
+  .flow-steps-grid{ display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:6px; }
+  .flow-legend{ display:flex; gap:20px; margin-top:14px; font-size:11px; color:var(--ink-2); }
+  .flow-legend .sq{ width:9px;height:9px; display:inline-block; margin-right:5px; border-radius:2px; }
 </style>
 </head>
 <body>
@@ -867,6 +942,130 @@ function render(){
     <p class="lede">O que muda na estratégia com base nesses números.</p>
     <div class="slide-body">
       <textarea class="next-steps-box" data-key="${nextStepsKey}" placeholder="Ex.: acelerar prospecção outbound na Tech para fechar o GAP do trimestre...">${savedSteps}</textarea>
+    </div>
+  `);
+
+  // ⚠ TEMPORÁRIO — só para a apresentação de setembro/2026, remover depois
+  // (slides "Liz" e "Estrutura comercial", fora do fluxo normal de dados).
+  slidesHtml.push(`
+    <div class="liz-top">
+      <div class="liz-left">
+        <h1 class="big">Liz</h1>
+        <p class="desc">Agente de IA de prospecção ativa da Lucralize, do primeiro contato à reunião com o comercial</p>
+        <div class="liz-tone">💬 <b>Tom de colega de área:</b> direto, informal e sem pressão</div>
+        <div class="liz-tags">
+          <span class="liz-tag">BDR · Outbound</span>
+          <span class="liz-tag dashed">Em desenvolvimento</span>
+        </div>
+      </div>
+      <div class="liz-chat">
+        <div class="liz-chat-head">
+          <div class="who">
+            <div class="liz-chat-avatar">L</div>
+            <div><div class="liz-chat-name">Liz</div><div class="liz-chat-sub">Lucralize Tech</div></div>
+          </div>
+          <span class="liz-chat-badge">1º WhatsApp, D3</span>
+        </div>
+        <div class="liz-bubble">Oi, aqui é a Liz, do time comercial da Lucralize Tech 👋 Me conta, seu contador entende bem a sua rotina?</div>
+        <div class="liz-bubble">A gente é uma contabilidade especializada em devs e profissionais de tecnologia. Faz sentido eu te mostrar como seria no seu caso?</div>
+      </div>
+    </div>
+
+    <div class="liz-section-title">Como ela trabalha</div>
+    <div class="liz-steps">
+      <div class="liz-step"><div class="liz-step-icon">▽</div><h4>Filtra</h4><p>Tira quem já é cliente ou pediu para sair</p></div>
+      <div class="liz-step"><div class="liz-step-icon">➤</div><h4>Aborda</h4><p>Segue a cadência por e-mail e WhatsApp</p></div>
+      <div class="liz-step"><div class="liz-step-icon">✓</div><h4>Qualifica</h4><p>Entende cenário, faturamento e momento do lead</p></div>
+      <div class="liz-step"><div class="liz-step-icon">▤</div><h4>Agenda</h4><p>Marca a reunião no Teams e entrega o resumo</p></div>
+    </div>
+
+    <div class="liz-section-title">Cadência</div>
+    <p class="liz-cadencia-sub"><b>6 toques em 24 dias</b>, cada um com um motivo diferente</p>
+    <div class="liz-timeline">
+      <div class="liz-tl-item"><div class="liz-tl-dot"></div><span class="d">D0</span><h5>Apresentação</h5><p>Quem somos e por que o contato</p><span class="liz-tl-chan">✉ E-mail</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-dot active"></div><span class="d">D3</span><h5>Abordagem</h5><p>Mensagem curta, puxando conversa</p><span class="liz-tl-chan">◔ WhatsApp</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-dot"></div><span class="d">D7</span><h5>Dor</h5><p>Um problema comum do perfil</p><span class="liz-tl-chan">✉ E-mail</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-dot active"></div><span class="d">D11</span><h5>Pergunta</h5><p>"Faz sentido?" com um material útil</p><span class="link">📄 Guia do CNAE certo</span><span class="liz-tl-chan">◔ WhatsApp</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-dot"></div><span class="d">D17</span><h5>Prova</h5><p>Benefício ou case de cliente</p><span class="liz-tl-chan">✉ E-mail</span></div>
+      <div class="liz-tl-item"><div class="liz-tl-dot active"></div><span class="d">D24</span><h5>Encerramento</h5><p>Porta aberta, deixando um presente</p><span class="link">🧮 Calculadora de impostos</span><span class="liz-tl-chan">◔ WhatsApp</span></div>
+    </div>
+    <p class="liz-foot">Respondeu, a Liz assume a conversa. Sem resposta, volta em 60 a 90 dias com um motivo novo.</p>
+
+    <div class="liz-bottom">
+      <div class="liz-profile">
+        <h4>Perfil de público</h4>
+        <p class="sub">Configurável: cada perfil traz sua oferta e seus ganchos.</p>
+        <div class="liz-profile-active">
+          <div class="tag">Perfil ativo agora</div>
+          <div class="name">Tech PJ</div>
+          <div class="liz-profile-row"><span class="k">Quem</span><span class="v">Profissionais de tecnologia com CNPJ (CNAEs 62xx e 9511)</span></div>
+          <div class="liz-profile-row"><span class="k">Oferta</span><span class="v">Consultoria gratuita e migração contábil</span></div>
+          <div class="liz-profile-row"><span class="k">Ganchos</span><span class="v">Contador que não entende dev, imposto alto</span></div>
+        </div>
+      </div>
+      <div class="liz-rules">
+        <h4>Regras</h4>
+        <div class="liz-rule"><span class="ic">⊘</span><div><div class="t">Nunca aborda cliente</div><div class="d">Checagem antes de cada disparo</div></div></div>
+        <div class="liz-rule"><span class="ic">$</span><div><div class="t">Não abre com preço</div><div class="d">Valores e fechamento ficam com o comercial</div></div></div>
+        <div class="liz-rule"><span class="ic">✕</span><div><div class="t">Opt-out é permanente</div><div class="d">Pediu para sair, nunca mais é contatado</div></div></div>
+        <div class="liz-rule"><span class="ic">🛡</span><div><div class="t">Transparência</div><div class="d">Não nega ser IA se perguntarem</div></div></div>
+      </div>
+    </div>
+  `);
+
+  slidesHtml.push(`
+    <div class="slide-body" style="justify-content:flex-start;">
+      <h1 style="margin-bottom:2px;">Estrutura comercial</h1>
+      <p class="lede" style="margin-bottom:16px;">Do primeiro contato à assinatura com a Lucralize.</p>
+
+      <div class="flow-wrap">
+        <div class="flow-card coral">
+          <p class="flow-eyebrow">Gestão</p>
+          <p class="flow-name">Ronaldo</p>
+          <p class="flow-role">Gestor comercial</p>
+          <p class="flow-bullet">• Metas e réguas</p>
+          <p class="flow-bullet">• Ajusta as IAs</p>
+          <p class="flow-bullet">• Resolve exceções</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-stack">
+          <div class="flow-mini">
+            <div class="flow-mini-head"><span class="name">Liz</span><span class="badge">Outbound</span></div>
+            <p>Filtra, aborda, qualifica e agenda</p>
+          </div>
+          <div class="flow-mini">
+            <div class="flow-mini-head"><span class="name">Luca</span><span class="badge">Inbound</span></div>
+            <p>Responde na hora e qualifica</p>
+          </div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-card gray">
+          <p class="flow-eyebrow" style="color:var(--ink-3);">Passagem</p>
+          <p class="flow-name" style="font-size:14px;">Inside Sales</p>
+          <p class="flow-bullet">• Dados do lead</p>
+          <p class="flow-bullet">• Inteligência comercial</p>
+          <p class="flow-bullet">• Origem e gatilho</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-card coral" style="flex:1.5;">
+          <p class="flow-eyebrow">Conversão</p>
+          <p class="flow-name">Everton</p>
+          <p class="flow-role">Inside Sales</p>
+          <div class="flow-steps-grid">
+            <p class="flow-bullet">1 · Preparação</p>
+            <p class="flow-bullet">2 · Reunião</p>
+            <p class="flow-bullet">3 · Proposta</p>
+            <p class="flow-bullet">4 · Follow-ups</p>
+          </div>
+          <p class="flow-bullet">5 · Fechamento</p>
+        </div>
+      </div>
+
+      <div class="flow-legend">
+        <span><span class="sq" style="background:var(--teal)"></span>Agentes de IA</span>
+        <span><span class="sq" style="background:var(--coral)"></span>Pessoas</span>
+        <span style="margin-left:auto;color:var(--ink-3);">↩ feedback de qualidade das IAs volta pro gestor</span>
+      </div>
     </div>
   `);
 
