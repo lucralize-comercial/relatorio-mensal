@@ -51,9 +51,9 @@
   .eyebrow{ font-size:12px; color:var(--ink-3); margin:0 0 8px; letter-spacing:.02em; }
   .slide h1{ font-size:34px; font-weight:500; margin:0 0 10px; color:var(--teal); }
   .slide .lede{ font-size:15px; color:#fff; opacity:.85; margin:0 0 24px; max-width:760px; line-height:1.5; }
-  .slide[data-i="0"] h1, .slide[data-i="8"] h1{ font-size:60px; }
-  .slide[data-i="0"] .lede, .slide[data-i="8"] .lede{ font-size:19px; }
-  .slide[data-i="0"] .eyebrow, .slide[data-i="8"] .eyebrow{ font-size:14px; }
+  .slide[data-i="0"] h1, .slide[data-i="9"] h1{ font-size:60px; }
+  .slide[data-i="0"] .lede, .slide[data-i="9"] .lede{ font-size:19px; }
+  .slide[data-i="0"] .eyebrow, .slide[data-i="9"] .eyebrow{ font-size:14px; }
   .slide-body{ flex:1; display:flex; flex-direction:column; justify-content:space-evenly; min-height:0; gap:20px; }
   .slide-footnote{ font-size:11px; color:var(--ink-3); margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
 
@@ -65,6 +65,18 @@
   .kpi .num.up{ color:var(--success); }
   .kpi .num.down{ color:var(--danger); }
   .kpi .sub{ font-size:11px; color:var(--ink-3); margin:5px 0 0; }
+
+
+  /* META 2026 EM NÚMEROS */
+  .meta-number-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:4px; }
+  .meta-number-card{ min-height:176px; border:1px solid var(--line); border-radius:14px; padding:22px 24px; display:flex; flex-direction:column; justify-content:center; background:rgba(255,255,255,.018); }
+  .meta-number-card.alert{ border-color:rgba(247,86,107,.55); background:rgba(247,86,107,.035); }
+  .meta-number-card.goal{ border-color:rgba(79,209,165,.48); background:rgba(79,209,165,.03); }
+  .meta-number-value{ font-family:'Manrope',sans-serif; font-size:48px; line-height:1; font-weight:700; color:#fff; margin:0 0 12px; }
+  .meta-number-value.danger{ color:var(--danger); }
+  .meta-number-value.success{ color:var(--success); }
+  .meta-number-label{ font-family:'Manrope',sans-serif; font-size:18px; line-height:1.2; font-weight:600; color:var(--teal); margin:0 0 7px; }
+  .meta-number-sub{ font-size:12px; line-height:1.45; color:var(--ink-2); margin:0; }
 
   .card{ background:#fff; border-radius:10px; padding:16px 20px; color:#14181C; overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .card table{ table-layout:auto; width:100%; }
@@ -150,7 +162,7 @@
     #singleView{ display:block !important; }
     #slides{ max-height:none !important; overflow:visible !important; aspect-ratio:auto !important; width:auto !important; }
     .slide{ display:flex !important; position:static !important; transform:none !important; page-break-after:always; width:1280px; height:720px; background:#fff !important; color:#14181C !important; }
-    .slide[data-i="0"] h1, .slide[data-i="8"] h1{ color:#0C7488 !important; }
+    .slide[data-i="0"] h1, .slide[data-i="9"] h1{ color:#0C7488 !important; }
     .eyebrow{ color:#5B6470 !important; }
     .slide h1{ color:#0C7488 !important; }
     .slide .lede{ color:#14181C !important; opacity:1 !important; }
@@ -516,7 +528,54 @@ function render(){
     </div>
   `);
 
-  // Slide 4 — funil de vendas
+  // Slide 4 — Meta 2026 em números
+  {
+    const proxMesMeta = monthIdx < 11 ? MESES[monthIdx+1].toLowerCase() : null;
+    const periodoNecessario = mesesRestantes > 0
+      ? `Saldo médio necessário de ${proxMesMeta} a dezembro`
+      : 'Último mês do ciclo anual';
+    slidesHtml.push(`
+      <div class="eyebrow">Slide 4</div>
+      <h1>Meta 2026 em números</h1>
+      <p class="lede">750 clientes até dezembro.</p>
+      <div class="slide-body">
+        <div class="meta-number-grid">
+          <div class="meta-number-card">
+            <p class="meta-number-value">${ativosInicioAno.total}</p>
+            <p class="meta-number-label">Dezembro ${parseInt(y,10)-1}</p>
+            <p class="meta-number-sub">Ponto de partida do ano</p>
+          </div>
+          <div class="meta-number-card">
+            <p class="meta-number-value">${ativos.total}</p>
+            <p class="meta-number-label">${MESES[monthIdx]}</p>
+            <p class="meta-number-sub">Base atual</p>
+          </div>
+          <div class="meta-number-card ${faltamMeta>0?'alert':'goal'}">
+            <p class="meta-number-value ${faltamMeta>0?'danger':'success'}">${faltamMeta}</p>
+            <p class="meta-number-label">Faltam</p>
+            <p class="meta-number-sub">Clientes para alcançar a meta</p>
+          </div>
+          <div class="meta-number-card">
+            <p class="meta-number-value">750</p>
+            <p class="meta-number-label">Meta dezembro</p>
+            <p class="meta-number-sub">Clientes ativos até o fim de ${y}</p>
+          </div>
+          <div class="meta-number-card goal">
+            <p class="meta-number-value success">+${porMesNecessario}</p>
+            <p class="meta-number-label">Por mês</p>
+            <p class="meta-number-sub">${periodoNecessario}</p>
+          </div>
+          <div class="meta-number-card">
+            <p class="meta-number-value ${ritmoAtual>=0?'success':'danger'}">${ritmoAtual>=0?'+':''}${ritmoAtual}</p>
+            <p class="meta-number-label">Saldo líquido médio/mês</p>
+            <p class="meta-number-sub">Crescimento médio da base por mês no ano</p>
+          </div>
+        </div>
+      </div>
+    `);
+  }
+
+  // Slide 5 — funil de vendas
   function funilAnoTable(){
     const dataMes = funilMensalAno(y);
     const reunioesMes = reunioesMensalAno(y);
@@ -598,7 +657,7 @@ function render(){
     </div>`;
   }
   slidesHtml.push(`
-    <div class="eyebrow">Slide 4</div>
+    <div class="eyebrow">Slide 5</div>
     <h1>Funil de vendas</h1>
     <p class="lede">Funil Comercial no Agendor — volume e conversão acumulados até ${MESES[monthIdx]}.</p>
     <div class="slide-body">
@@ -613,7 +672,7 @@ function render(){
     </div>
   `);
 
-  // Slide 5 — comparativo histórico (grade de saldo em cima, tabela de produto embaixo, ano inteiro)
+  // Slide 6 — comparativo histórico (grade de saldo em cima, tabela de produto embaixo, ano inteiro)
   const anoKeys = allKeys.filter(k=>k.startsWith(y));
   function tile(k){
     const a = agg[k]; const s = a.entradas-a.saidas;
@@ -625,13 +684,28 @@ function render(){
     ? `<div class="month-grid-row">${primeiroSemestre.map(tile).join('')}</div><div class="month-grid-row">${segundoSemestre.map(tile).join('')}</div>`
     : '';
   function produtoTable(keys){
-    let rowTech='<tr><td>Lucralize Tech</td>', rowPmes='<tr><td>Contabilidade PMEs</td>', rowTotal='<tr><td>Total</td>';
+    const techVals=[], pmesVals=[], totalVals=[];
     let totTech=0, totPmes=0;
     keys.forEach(k=>{
       const a = agg[k] || {tech:0,pmes:0};
+      techVals.push(a.tech); pmesVals.push(a.pmes); totalVals.push(a.tech+a.pmes);
       totTech+=a.tech; totPmes+=a.pmes;
-      rowTech+=`<td>${a.tech}</td>`; rowPmes+=`<td>${a.pmes}</td>`; rowTotal+=`<td>${a.tech+a.pmes}</td>`;
     });
+    function greenCell(v, vals){
+      const valid = vals.filter(n=>Number.isFinite(n));
+      const min = valid.length ? Math.min(...valid) : 0;
+      const max = valid.length ? Math.max(...valid) : 0;
+      const t = max>min ? (v-min)/(max-min) : 0.5;
+      const alpha = 0.08 + t*0.42;
+      const best = v===max && max>min;
+      const worst = v===min && max>min;
+      const badge = best ? '<span class="heat-badge best">MELHOR</span>' : (worst ? '<span class="heat-badge" style="color:#AAB8C2">PIOR</span>' : '');
+      return `<td style="background:rgba(29,158,117,${alpha.toFixed(2)})">${v}${badge}</td>`;
+    }
+    let rowTech='<tr><td>Lucralize Tech</td>', rowPmes='<tr><td>Contabilidade PMEs</td>', rowTotal='<tr><td>Total</td>';
+    techVals.forEach(v=>rowTech+=greenCell(v,techVals));
+    pmesVals.forEach(v=>rowPmes+=greenCell(v,pmesVals));
+    totalVals.forEach(v=>rowTotal+=greenCell(v,totalVals));
     rowTech+=`<td>${totTech}</td></tr>`; rowPmes+=`<td>${totPmes}</td></tr>`; rowTotal+=`<td>${totTech+totPmes}</td></tr>`;
     return `<div class="table-dark">
       <table>
@@ -642,7 +716,7 @@ function render(){
     </div>`;
   }
   slidesHtml.push(`
-    <div class="eyebrow">Slide 5</div>
+    <div class="eyebrow">Slide 6</div>
     <h1>Comparativo histórico</h1>
     <p class="lede">Evolução mês a mês — saldo de clientes e vendas por produto em ${y}.</p>
     <div class="slide-body">
@@ -651,10 +725,10 @@ function render(){
     </div>
   `);
 
-  // Slide 6 — receita e novos clientes
+  // Slide 7 — receita e novos clientes
   const curLabel5 = MESES[monthIdx];
   slidesHtml.push(`
-    <div class="eyebrow">Slide 6</div>
+    <div class="eyebrow">Slide 7</div>
     <h1>Novos clientes e ticket médio</h1>
     <p class="lede">Como ${curLabel5} entrou para a base, comparado a ${prevLabel || 'o mês anterior'}.</p>
     <div class="slide-body">
@@ -691,41 +765,57 @@ function render(){
     </div>
   `);
 
-  // Slide 7 — churn e perdas
+  // Slide 8 — churn e perdas
   const churnBase = ativosPrev ? ativosPrev.total : ativos.total;
   const churnTaxa = churnBase ? (cur.saidas/churnBase*100) : 0;
   const anoKeysChurn = allKeys.filter(k=>k.startsWith(y));
   function saidasProdutoTable(keys){
     const saidasAgg = monthlySaidasPorProduto();
-    let rowTech='<tr><td>Lucralize Tech</td>', rowPmes='<tr><td>Contabilidade PMEs</td>', rowTotal='<tr><td>Total</td>';
+    const techVals=[], pmesVals=[], totaisMes=[], pctVals=[], churnVals=[];
     let totTech=0, totPmes=0;
-    const totaisMes = [];
     keys.forEach(k=>{
       const a = saidasAgg[k] || {tech:0,pmes:0};
+      techVals.push(a.tech); pmesVals.push(a.pmes); totaisMes.push(a.tech+a.pmes);
       totTech+=a.tech; totPmes+=a.pmes;
-      const totalMes = a.tech+a.pmes;
-      totaisMes.push(totalMes);
-      rowTech+=`<td>${a.tech}</td>`; rowPmes+=`<td>${a.pmes}</td>`; rowTotal+=`<td>${totalMes}</td>`;
     });
     const totalAno = totTech+totPmes;
-    rowTech+=`<td>${totTech}</td></tr>`; rowPmes+=`<td>${totPmes}</td></tr>`; rowTotal+=`<td>${totalAno}</td></tr>`;
-    let rowPct = '<tr><td>% do total</td>';
-    totaisMes.forEach(t=>{ rowPct += `<td>${totalAno ? (t/totalAno*100).toFixed(0) : 0}%</td>`; });
-    rowPct += `<td>100%</td></tr>`;
-    let rowBase = '<tr><td>Base ativa (final)</td>';
-    let rowChurn = '<tr><td>Churn</td>';
+    totaisMes.forEach(t=>pctVals.push(totalAno ? (t/totalAno*100) : 0));
     keys.forEach(k=>{
-      if(k > selectedMonthKey){
-        rowBase += '<td>-</td>'; rowChurn += '<td>-</td>';
-      }else{
-        const baseFinal = ativosSnapshot(k).total;
+      if(k > selectedMonthKey){ churnVals.push(null); }
+      else{
         const baseAnterior = ativosSnapshot(prevMonthOf(k)).total;
         const a = saidasAgg[k] || {tech:0,pmes:0};
-        const churnMes = baseAnterior ? ((a.tech+a.pmes)/baseAnterior*100) : 0;
-        rowBase += `<td>${baseFinal}</td>`; rowChurn += `<td>${churnMes.toFixed(1)}%</td>`;
+        churnVals.push(baseAnterior ? ((a.tech+a.pmes)/baseAnterior*100) : 0);
       }
     });
+    function redCell(v, vals, suffix=''){
+      if(v===null) return '<td>-</td>';
+      const valid = vals.filter(n=>n!==null && Number.isFinite(n));
+      const min = valid.length ? Math.min(...valid) : 0;
+      const max = valid.length ? Math.max(...valid) : 0;
+      const t = max>min ? (v-min)/(max-min) : 0.5;
+      const alpha = 0.08 + t*0.42;
+      const best = v===min && max>min;
+      const worst = v===max && max>min;
+      const badge = best ? '<span class="heat-badge" style="color:#F6A6B1">MELHOR</span>' : (worst ? '<span class="heat-badge worst">PIOR</span>' : '');
+      const txt = suffix==='%' ? `${v.toFixed(1)}%` : `${v}${suffix}`;
+      return `<td style="background:rgba(247,86,107,${alpha.toFixed(2)})">${txt}${badge}</td>`;
+    }
+    let rowTech='<tr><td>Lucralize Tech</td>', rowPmes='<tr><td>Contabilidade PMEs</td>', rowTotal='<tr><td>Total</td>';
+    techVals.forEach(v=>rowTech+=redCell(v,techVals));
+    pmesVals.forEach(v=>rowPmes+=redCell(v,pmesVals));
+    totaisMes.forEach(v=>rowTotal+=redCell(v,totaisMes));
+    rowTech+=`<td>${totTech}</td></tr>`; rowPmes+=`<td>${totPmes}</td></tr>`; rowTotal+=`<td>${totalAno}</td></tr>`;
+    let rowPct = '<tr><td>% do total</td>';
+    pctVals.forEach(v=>{ rowPct += redCell(v,pctVals,'%'); });
+    rowPct += `<td>100%</td></tr>`;
+    let rowBase = '<tr><td>Base ativa (final)</td>';
+    keys.forEach(k=>{
+      rowBase += k > selectedMonthKey ? '<td>-</td>' : `<td>${ativosSnapshot(k).total}</td>`;
+    });
     rowBase += `<td>${ativos.total}</td></tr>`;
+    let rowChurn = '<tr><td>Churn</td>';
+    churnVals.forEach(v=>{ rowChurn += redCell(v,churnVals,'%'); });
     rowChurn += `<td>${churnTaxaAno.toFixed(1)}%</td></tr>`;
     return `<div class="table-dark">
       <table>
@@ -736,7 +826,7 @@ function render(){
     </div>`;
   }
   slidesHtml.push(`
-    <div class="eyebrow">Slide 7</div>
+    <div class="eyebrow">Slide 8</div>
     <h1>Churn e perdas</h1>
     <p class="lede">Clientes que saíram da base em ${MESES[monthIdx]}, e o acumulado do ano.</p>
     <div class="slide-body">
@@ -754,11 +844,11 @@ function render(){
     </div>
   `);
 
-  // Slide 8 — próximos passos (texto livre, editável à mão, salvo por mês no navegador)
+  // Slide 9 — próximos passos (texto livre, editável à mão, salvo por mês no navegador)
   const nextStepsKey = `nextSteps_${selectedMonthKey}`;
   const savedSteps = localStorage.getItem(nextStepsKey) || '';
   slidesHtml.push(`
-    <div class="eyebrow">Slide 8</div>
+    <div class="eyebrow">Slide 9</div>
     <h1>Próximos passos</h1>
     <p class="lede">O que muda na estratégia com base nesses números.</p>
     <div class="slide-body">
@@ -766,7 +856,7 @@ function render(){
     </div>
   `);
 
-  // Slide 9 — obrigado
+  // Slide 10 — obrigado
   slidesHtml.push(`
     <div class="eyebrow">COMERCIAL</div>
     <h1>Obrigado</h1>
@@ -897,6 +987,22 @@ async function exportPPTX(){
         fill: dark ? {color:NAVY} : {color:WHITE},
         border: {type:'solid', color: dark ? '2A3350' : 'E4E8EB', pt:0.5}, autoPage:false, margin: opts.margin!==undefined ? opts.margin : 0.05 });
     }
+    function heatCellPpt(v, vals, mode, suffix=''){
+      if(v===null) return '-';
+      const valid = vals.filter(n=>n!==null && Number.isFinite(n));
+      const min = valid.length ? Math.min(...valid) : 0;
+      const max = valid.length ? Math.max(...valid) : 0;
+      const t = max>min ? (v-min)/(max-min) : 0.5;
+      const levelsGreen = ['173129','194437','1B5946','1C7055','1D8765','1D9E75'];
+      const levelsRed = ['2B1720','451B29','632234','842B41','AD394F','D94A61'];
+      const levels = mode==='green' ? levelsGreen : levelsRed;
+      const idx = Math.max(0, Math.min(levels.length-1, Math.round(t*(levels.length-1))));
+      const best = mode==='green' ? (v===max && max>min) : (v===min && max>min);
+      const worst = mode==='green' ? (v===min && max>min) : (v===max && max>min);
+      const valueText = suffix==='%' ? `${v.toFixed(1)}%` : `${v}${suffix}`;
+      const badge = best ? ' MELHOR' : (worst ? ' PIOR' : '');
+      return { text:valueText+badge, options:{ fill:{color:levels[idx]}, bold:best||worst, color:WHITE, fontSize:best||worst?5.8:6.2 } };
+    }
 
     // Slide 1 — capa
     let s = baseSlide();
@@ -964,9 +1070,36 @@ async function exportPPTX(){
       tableSlide(s, 3.25, rows, [2.6,1.6,1.6,1.6,1.6], { dark:true, fontSize:10 });
     }
 
-    // Slide 4 — funil de vendas
+    // Slide 4 — Meta 2026 em números
     s = baseSlide();
-    header(s, 'Slide 4', 'Funil de vendas', `Funil Comercial no Agendor — volume e conversão acumulados até ${MESES[R.monthIdx]}.`);
+    header(s, 'Slide 4', 'Meta 2026 em números', '750 clientes até dezembro.');
+    {
+      const proxMesMeta = R.monthIdx < 11 ? MESES[R.monthIdx+1].toLowerCase() : null;
+      const periodoNecessario = R.mesesRestantes > 0
+        ? `Saldo médio necessário de ${proxMesMeta} a dezembro`
+        : 'Último mês do ciclo anual';
+      const cards = [
+        { value:String(R.ativosInicioAno.total), label:`Dezembro ${R.y-1}`, sub:'Ponto de partida do ano', valueColor:WHITE, line:'2A3350', fill:'11192E' },
+        { value:String(R.ativos.total), label:MESES[R.monthIdx], sub:'Base atual', valueColor:WHITE, line:'2A3350', fill:'11192E' },
+        { value:String(R.faltamMeta), label:'Faltam', sub:'Clientes para alcançar a meta', valueColor:R.faltamMeta>0?DANGER:SUCCESS, line:R.faltamMeta>0?DANGER:SUCCESS, fill:R.faltamMeta>0?'211420':'11221D' },
+        { value:'750', label:'Meta dezembro', sub:`Clientes ativos até o fim de ${R.y}`, valueColor:WHITE, line:'2A3350', fill:'11192E' },
+        { value:`+${R.porMesNecessario}`, label:'Por mês', sub:periodoNecessario, valueColor:SUCCESS, line:SUCCESS, fill:'11221D' },
+        { value:`${R.ritmoAtual>=0?'+':''}${R.ritmoAtual}`, label:'Saldo líquido médio/mês', sub:'Crescimento médio da base por mês no ano', valueColor:R.ritmoAtual>=0?SUCCESS:DANGER, line:'2A3350', fill:'11192E' },
+      ];
+      const cardW=2.82, cardH=1.58, gapX=0.27, gapY=0.22, startX=0.5, startY=1.72;
+      cards.forEach((c,i)=>{
+        const col=i%3, row=Math.floor(i/3);
+        const x=startX+col*(cardW+gapX), y=startY+row*(cardH+gapY);
+        s.addShape('roundRect',{x,y,w:cardW,h:cardH,rectRadius:0.06,fill:{color:c.fill,transparency:6},line:{color:c.line,width:0.7}});
+        s.addText(c.value,{x:x+0.22,y:y+0.22,w:cardW-0.44,h:0.58,fontSize:27,bold:true,color:c.valueColor,fontFace:'Arial',margin:0});
+        s.addText(c.label,{x:x+0.22,y:y+0.84,w:cardW-0.44,h:0.28,fontSize:11.5,bold:true,color:TEAL,fontFace:'Arial',margin:0});
+        s.addText(c.sub,{x:x+0.22,y:y+1.16,w:cardW-0.44,h:0.30,fontSize:8.2,color:MUTED,fontFace:'Arial',margin:0,breakLine:false});
+      });
+    }
+
+    // Slide 5 — funil de vendas
+    s = baseSlide();
+    header(s, 'Slide 5', 'Funil de vendas', `Funil Comercial no Agendor — volume e conversão acumulados até ${MESES[R.monthIdx]}.`);
     kpiRow(s, [
       { label:'Leads Inbound no ano', value:String(R.funilAno.leads), sub:`Janeiro a ${MESES[R.monthIdx].toLowerCase()}` },
       { label:'Fechamentos no ano', value:String(R.funilAno.fechamentos), sub:`Conversão média de ${R.funilAno.conversao.toFixed(0)}%` },
@@ -1012,9 +1145,9 @@ async function exportPPTX(){
     }
     s.addText('Etapas intermediárias do funil (qualificado, proposta enviada), origem do lead e motivo de perda ainda pendentes de mapeamento de campo no Agendor.', { x:0.5, y:5.18, w:9, h:0.24, fontSize:7.8, color:MUTED, fontFace:'Arial', margin:0 });
 
-    // Slide 5 — comparativo histórico (grade de saldo em cima, tabela de produto embaixo, ano inteiro)
+    // Slide 6 — comparativo histórico (grade de saldo em cima, tabela de produto embaixo, ano inteiro)
     s = baseSlide();
-    header(s, 'Slide 5', 'Comparativo histórico', `Evolução mês a mês — saldo de clientes e vendas por produto em ${R.y}.`);
+    header(s, 'Slide 6', 'Comparativo histórico', `Evolução mês a mês — saldo de clientes e vendas por produto em ${R.y}.`);
     {
       const cols = 6;
       R.anoKeys.forEach((k,i)=>{
@@ -1031,18 +1164,19 @@ async function exportPPTX(){
         R.anoKeys.map(k=>({text:MESES[parseInt(k.slice(5),10)-1].slice(0,3), options:{bold:true, color:TEAL, fill:headFillP7}}))
       ).concat([{text:'Total', options:{bold:true, color:TEAL, fill:headFillP7}}]);
       let totTech=0, totPmes=0;
-      const rowTech=['Lucralize Tech'], rowPmes=['Contabilidade PMEs'];
-      const rowTotal=['Total'];
-      R.anoKeys.forEach(k=>{ const a=R.agg[k]||{tech:0,pmes:0}; totTech+=a.tech; totPmes+=a.pmes; rowTech.push(String(a.tech)); rowPmes.push(String(a.pmes)); rowTotal.push(String(a.tech+a.pmes)); });
-      rowTech.push(String(totTech)); rowPmes.push(String(totPmes)); rowTotal.push(String(totTech+totPmes));
-      tableSlide(s, 3.35, [head, rowTech, rowPmes, rowTotal], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:7.8, margin:0.03 });
+      const techVals=[], pmesVals=[], totalVals=[];
+      R.anoKeys.forEach(k=>{ const a=R.agg[k]||{tech:0,pmes:0}; techVals.push(a.tech); pmesVals.push(a.pmes); totalVals.push(a.tech+a.pmes); totTech+=a.tech; totPmes+=a.pmes; });
+      const rowTech=['Lucralize Tech'].concat(techVals.map(v=>heatCellPpt(v,techVals,'green'))).concat([String(totTech)]);
+      const rowPmes=['Contabilidade PMEs'].concat(pmesVals.map(v=>heatCellPpt(v,pmesVals,'green'))).concat([String(totPmes)]);
+      const rowTotal=['Total'].concat(totalVals.map(v=>heatCellPpt(v,totalVals,'green'))).concat([String(totTech+totPmes)]);
+      tableSlide(s, 3.35, [head, rowTech, rowPmes, rowTotal], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:7.0, margin:0.03 });
     }
 
-    // Slide 6 — novos clientes e ticket médio
+    // Slide 7 — novos clientes e ticket médio
     s = baseSlide();
     {
       const curLabel5 = MESES[R.monthIdx];
-      header(s, 'Slide 6', 'Novos clientes e ticket médio', `Como ${curLabel5} entrou para a base, comparado a ${R.prevLabel || 'o mês anterior'}.`);
+      header(s, 'Slide 7', 'Novos clientes e ticket médio', `Como ${curLabel5} entrou para a base, comparado a ${R.prevLabel || 'o mês anterior'}.`);
 
       s.addText('BASE DE CLIENTES', { x:0.5, y:1.62, w:9, h:0.22, fontSize:8.5, bold:true, color:MUTED, fontFace:'Arial', charSpacing:1, margin:0 });
 
@@ -1065,9 +1199,9 @@ async function exportPPTX(){
       s.addText('Valor médio por cliente por mês', { x:5.0, y:4.22, w:4.2, h:0.3, fontSize:8.5, color:MUTED, align:'center', fontFace:'Arial' });
     }
 
-    // Slide 7 — churn e perdas
+    // Slide 8 — churn e perdas
     s = baseSlide();
-    header(s, 'Slide 7', 'Churn e perdas', `Clientes que saíram da base em ${MESES[R.monthIdx]}, e o acumulado do ano.`);
+    header(s, 'Slide 8', 'Churn e perdas', `Clientes que saíram da base em ${MESES[R.monthIdx]}, e o acumulado do ano.`);
     {
       const churnBase = R.ativosPrev ? R.ativosPrev.total : R.ativos.total;
       const churnTaxa = churnBase ? (R.cur.saidas/churnBase*100) : 0;
@@ -1085,28 +1219,27 @@ async function exportPPTX(){
         R.anoKeys.map(k=>({text:MESES[parseInt(k.slice(5),10)-1].slice(0,3), options:{bold:true, color:TEAL, fill:headFill6}}))
       ).concat([{text:'Total', options:{bold:true, color:TEAL, fill:headFill6}}]);
       let totTech=0, totPmes=0;
-      const totaisMes = [];
-      const rowTech=['Lucralize Tech'], rowPmes=['Contabilidade PMEs'];
-      R.anoKeys.forEach(k=>{ const a=saidasAgg[k]||{tech:0,pmes:0}; totTech+=a.tech; totPmes+=a.pmes; const t=a.tech+a.pmes; totaisMes.push(t); rowTech.push(String(a.tech)); rowPmes.push(String(a.pmes)); });
+      const techVals=[], pmesVals=[], totaisMes=[], pctVals=[], churnVals=[];
+      R.anoKeys.forEach(k=>{ const a=saidasAgg[k]||{tech:0,pmes:0}; techVals.push(a.tech); pmesVals.push(a.pmes); const t=a.tech+a.pmes; totaisMes.push(t); totTech+=a.tech; totPmes+=a.pmes; });
       const totalAno = totTech+totPmes;
-      rowTech.push(String(totTech)); rowPmes.push(String(totPmes));
-      const rowTotal = ['Total'].concat(totaisMes.map(String)).concat([String(totalAno)]);
-      const rowPct = ['% do total'].concat(totaisMes.map(t=>`${totalAno?(t/totalAno*100).toFixed(0):0}%`)).concat(['100%']);
-      const rowBase = ['Base ativa (final)'];
-      const rowChurn = ['Churn'];
+      totaisMes.forEach(t=>pctVals.push(totalAno?(t/totalAno*100):0));
       R.anoKeys.forEach(k=>{
-        if(k > selectedMonthKey){ rowBase.push('-'); rowChurn.push('-'); }
+        if(k > selectedMonthKey){ churnVals.push(null); }
         else{
-          const baseFinal = ativosSnapshot(k).total;
           const baseAnterior = ativosSnapshot(prevMonthOf(k)).total;
           const a = saidasAgg[k] || {tech:0,pmes:0};
-          const churnMes = baseAnterior ? ((a.tech+a.pmes)/baseAnterior*100) : 0;
-          rowBase.push(String(baseFinal)); rowChurn.push(`${churnMes.toFixed(1)}%`);
+          churnVals.push(baseAnterior ? ((a.tech+a.pmes)/baseAnterior*100) : 0);
         }
       });
+      const rowTech=['Lucralize Tech'].concat(techVals.map(v=>heatCellPpt(v,techVals,'red'))).concat([String(totTech)]);
+      const rowPmes=['Contabilidade PMEs'].concat(pmesVals.map(v=>heatCellPpt(v,pmesVals,'red'))).concat([String(totPmes)]);
+      const rowTotal=['Total'].concat(totaisMes.map(v=>heatCellPpt(v,totaisMes,'red'))).concat([String(totalAno)]);
+      const rowPct=['% do total'].concat(pctVals.map(v=>heatCellPpt(v,pctVals,'red','%'))).concat(['100%']);
+      const rowBase=['Base ativa (final)'];
+      R.anoKeys.forEach(k=>rowBase.push(k>selectedMonthKey?'-':String(ativosSnapshot(k).total)));
       rowBase.push(String(R.ativos.total));
-      rowChurn.push(`${R.churnTaxaAno.toFixed(1)}%`);
-      tableSlide(s, 3.08, [head, rowTech, rowPmes, rowTotal, rowPct, rowBase, rowChurn], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:6.5, margin:0.03 });
+      const rowChurn=['Churn'].concat(churnVals.map(v=>heatCellPpt(v,churnVals,'red','%'))).concat([`${R.churnTaxaAno.toFixed(1)}%`]);
+      tableSlide(s, 3.08, [head, rowTech, rowPmes, rowTotal, rowPct, rowBase, rowChurn], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:5.9, margin:0.03 });
     }
     {
       const churnBaseNote = R.ativosPrev ? R.ativosPrev.total : R.ativos.total;
@@ -1115,9 +1248,9 @@ async function exportPPTX(){
       s.addText(`Taxa de churn no ano = saídas de janeiro a ${MESES[R.monthIdx].toLowerCase()} ÷ base de dezembro/${R.y-1} (${R.saidasAno} ÷ ${R.ativosInicioAno.total} = ${R.churnTaxaAno.toFixed(1)}%).`, { x:0.5, y:5.23, w:9, h:0.18, fontSize:7.1, color:MUTED, fontFace:'Arial', margin:0 });
     }
 
-    // Slide 8 — próximos passos (texto livre, salvo no navegador por mês)
+    // Slide 9 — próximos passos (texto livre, salvo no navegador por mês)
     s = baseSlide();
-    header(s, 'Slide 8', 'Próximos passos', 'O que muda na estratégia com base nesses números.');
+    header(s, 'Slide 9', 'Próximos passos', 'O que muda na estratégia com base nesses números.');
     {
       const saved = (localStorage.getItem(`nextSteps_${selectedMonthKey}`) || '').trim();
       const lines = saved ? saved.split('\n').filter(Boolean) : ['Nenhuma ação registrada ainda para este mês.'];
@@ -1126,7 +1259,7 @@ async function exportPPTX(){
       });
     }
 
-    // Slide 9 — obrigado
+    // Slide 10 — obrigado
     s = baseSlide();
     s.addText('COMERCIAL', { x:0.5, y:2.2, w:9, h:0.3, fontSize:11, color:MUTED, fontFace:'Arial' });
     s.addText('Obrigado', { x:0.5, y:2.5, w:9, h:0.7, fontSize:34, color:WHITE, bold:true, fontFace:'Arial' });
