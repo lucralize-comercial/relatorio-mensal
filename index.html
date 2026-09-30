@@ -48,9 +48,9 @@
   #slides{ position:relative; margin:0 auto; overflow:hidden; }
   .slide{ position:absolute; top:0; left:0; width:1280px; height:720px; padding:52px 64px; box-sizing:border-box; display:none; flex-direction:column; justify-content:center; overflow:hidden; transform-origin:top left; }
   .slide.active{ display:flex; }
-  .eyebrow{ font-size:12px; color:var(--ink-3); margin:0 0 8px; letter-spacing:.02em; }
-  .slide h1{ font-size:34px; font-weight:500; margin:0 0 10px; color:var(--teal); }
-  .slide .lede{ font-size:15px; color:#fff; opacity:.85; margin:0 0 24px; max-width:760px; line-height:1.5; }
+  .eyebrow{ font-size:13px; color:var(--ink-3); margin:0 0 8px; letter-spacing:.02em; }
+  .slide h1{ font-size:38px; font-weight:500; margin:0 0 10px; color:var(--teal); }
+  .slide .lede{ font-size:16.5px; color:#fff; opacity:.85; margin:0 0 24px; max-width:760px; line-height:1.5; }
   .slide[data-i="0"] h1, .slide[data-i="9"] h1{ font-size:60px; }
   .slide[data-i="0"] .lede, .slide[data-i="9"] .lede{ font-size:19px; }
   .slide[data-i="0"] .eyebrow, .slide[data-i="9"] .eyebrow{ font-size:14px; }
@@ -59,12 +59,12 @@
 
   .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:18px 22px; margin-bottom:12px; }
   .kpi{ padding:4px 0; }
-  .kpi .label{ font-size:12px; color:var(--ink-2); margin:0 0 6px; }
-  .kpi .num{ font-size:30px; font-weight:600; margin:0; color:#fff; line-height:1.1; word-break:break-word; }
+  .kpi .label{ font-size:13px; color:var(--ink-2); margin:0 0 6px; }
+  .kpi .num{ font-size:33px; font-weight:600; margin:0; color:#fff; line-height:1.1; word-break:break-word; }
   .kpis.compact .num{ font-size:24px; }
   .kpi .num.up{ color:var(--success); }
   .kpi .num.down{ color:var(--danger); }
-  .kpi .sub{ font-size:11px; color:var(--ink-3); margin:5px 0 0; }
+  .kpi .sub{ font-size:11.5px; color:var(--ink-3); margin:5px 0 0; }
 
 
   /* META 2026 EM NÚMEROS */
@@ -84,8 +84,8 @@
 
   .table-dark{ background:var(--navy-2); border-radius:10px; padding:0; overflow-x:auto; border:1px solid var(--line); -webkit-overflow-scrolling:touch; }
   .table-dark table{ color:#fff; table-layout:auto; width:100%; }
-  .table-dark thead th{ background:rgba(255,255,255,.05); color:var(--teal); font-weight:700; font-size:13px; text-transform:none; padding:14px 16px; border-bottom:1px solid var(--line); }
-  .table-dark td{ padding:14px 16px; border-bottom:1px solid var(--line); border-top:none; color:#fff; font-size:14px; }
+  .table-dark thead th{ background:rgba(255,255,255,.05); color:var(--teal); font-weight:700; font-size:14px; text-transform:none; padding:10px 14px; border-bottom:1px solid var(--line); }
+  .table-dark td{ padding:10px 14px; border-bottom:1px solid var(--line); border-top:none; color:#fff; font-size:15px; }
   .table-dark tbody tr:last-child td{ border-bottom:none; font-weight:700; }
   .table-dark th:not(:first-child), .table-dark td:not(:first-child){ text-align:center; }
   .table-dark th:first-child, .table-dark td:first-child{ text-align:left; }
@@ -128,9 +128,9 @@
   .month-grid{ display:flex; flex-direction:column; gap:14px; }
   .month-grid-row{ display:grid; grid-template-columns:repeat(6,1fr); gap:14px 10px; }
   .month-tile{ text-align:center; }
-  .month-tile .saldo{ font-weight:600; font-size:24px; font-family:'Manrope',sans-serif; }
-  .month-tile .name{ font-weight:700; color:#fff; font-size:11px; margin-top:3px; }
-  .month-tile .detail{ font-size:9px; color:var(--ink-2); margin-top:2px; }
+  .month-tile .saldo{ font-weight:600; font-size:27px; font-family:'Manrope',sans-serif; }
+  .month-tile .name{ font-weight:700; color:#fff; font-size:12px; margin-top:3px; }
+  .month-tile .detail{ font-size:10px; color:var(--ink-2); margin-top:2px; }
 
   .nav{ display:flex; align-items:center; justify-content:center; gap:18px; margin-top:18px; }
   .dots{ display:flex; gap:7px; }
@@ -138,7 +138,7 @@
   .dot.active{ background:var(--teal); }
   .nav .btn{ width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:50%; }
 
-  .note{ font-size:11px; color:var(--ink-3); background:rgba(255,255,255,.06); border-radius:7px; padding:10px 14px; margin-top:20px; }
+  .note{ font-size:11.5px; color:var(--ink-3); background:rgba(255,255,255,.06); border-radius:7px; padding:10px 14px; margin-top:20px; }
 
   .slide-grid{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
   .slide-thumb-wrap{ position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid var(--line); cursor:pointer; padding:0; background:var(--navy); transition:transform .15s ease, border-color .15s ease; display:block; }
@@ -691,7 +691,12 @@ function render(){
       techVals.push(a.tech); pmesVals.push(a.pmes); totalVals.push(a.tech+a.pmes);
       totTech+=a.tech; totPmes+=a.pmes;
     });
-    function greenCell(v, vals){
+    const pastMask = keys.map(k=>k<=selectedMonthKey);
+    const techPast = techVals.filter((_,i)=>pastMask[i]);
+    const pmesPast = pmesVals.filter((_,i)=>pastMask[i]);
+    const totalPast = totalVals.filter((_,i)=>pastMask[i]);
+    function greenCell(v, vals, isFuture){
+      if(isFuture) return `<td>${v}</td>`;
       const valid = vals.filter(n=>Number.isFinite(n));
       const min = valid.length ? Math.min(...valid) : 0;
       const max = valid.length ? Math.max(...valid) : 0;
@@ -703,9 +708,9 @@ function render(){
       return `<td style="background:rgba(29,158,117,${alpha.toFixed(2)})">${v}${badge}</td>`;
     }
     let rowTech='<tr><td>Lucralize Tech</td>', rowPmes='<tr><td>Contabilidade PMEs</td>', rowTotal='<tr><td>Total</td>';
-    techVals.forEach(v=>rowTech+=greenCell(v,techVals));
-    pmesVals.forEach(v=>rowPmes+=greenCell(v,pmesVals));
-    totalVals.forEach(v=>rowTotal+=greenCell(v,totalVals));
+    techVals.forEach((v,i)=>rowTech+=greenCell(v,techPast,!pastMask[i]));
+    pmesVals.forEach((v,i)=>rowPmes+=greenCell(v,pmesPast,!pastMask[i]));
+    totalVals.forEach((v,i)=>rowTotal+=greenCell(v,totalPast,!pastMask[i]));
     rowTech+=`<td>${totTech}</td></tr>`; rowPmes+=`<td>${totPmes}</td></tr>`; rowTotal+=`<td>${totTech+totPmes}</td></tr>`;
     return `<div class="table-dark">
       <table>
@@ -788,8 +793,15 @@ function render(){
         churnVals.push(baseAnterior ? ((a.tech+a.pmes)/baseAnterior*100) : 0);
       }
     });
-    function redCell(v, vals, suffix=''){
+    const pastMask = keys.map(k=>k<=selectedMonthKey);
+    const techPast = techVals.filter((_,i)=>pastMask[i]);
+    const pmesPast = pmesVals.filter((_,i)=>pastMask[i]);
+    const totalPast = totaisMes.filter((_,i)=>pastMask[i]);
+    const pctPast = pctVals.filter((_,i)=>pastMask[i]);
+    function redCell(v, vals, suffix='', isFuture=false){
       if(v===null) return '<td>-</td>';
+      const txt = suffix==='%' ? `${v.toFixed(1)}%` : `${v}${suffix}`;
+      if(isFuture) return `<td>${txt}</td>`;
       const valid = vals.filter(n=>n!==null && Number.isFinite(n));
       const min = valid.length ? Math.min(...valid) : 0;
       const max = valid.length ? Math.max(...valid) : 0;
@@ -798,16 +810,15 @@ function render(){
       const best = v===min && max>min;
       const worst = v===max && max>min;
       const badge = best ? '<span class="heat-badge" style="color:#F6A6B1">MELHOR</span>' : (worst ? '<span class="heat-badge worst">PIOR</span>' : '');
-      const txt = suffix==='%' ? `${v.toFixed(1)}%` : `${v}${suffix}`;
       return `<td style="background:rgba(247,86,107,${alpha.toFixed(2)})">${txt}${badge}</td>`;
     }
     let rowTech='<tr><td>Lucralize Tech</td>', rowPmes='<tr><td>Contabilidade PMEs</td>', rowTotal='<tr><td>Total</td>';
-    techVals.forEach(v=>rowTech+=redCell(v,techVals));
-    pmesVals.forEach(v=>rowPmes+=redCell(v,pmesVals));
-    totaisMes.forEach(v=>rowTotal+=redCell(v,totaisMes));
+    techVals.forEach((v,i)=>rowTech+=redCell(v,techPast,'',!pastMask[i]));
+    pmesVals.forEach((v,i)=>rowPmes+=redCell(v,pmesPast,'',!pastMask[i]));
+    totaisMes.forEach((v,i)=>rowTotal+=redCell(v,totalPast,'',!pastMask[i]));
     rowTech+=`<td>${totTech}</td></tr>`; rowPmes+=`<td>${totPmes}</td></tr>`; rowTotal+=`<td>${totalAno}</td></tr>`;
     let rowPct = '<tr><td>% do total</td>';
-    pctVals.forEach(v=>{ rowPct += redCell(v,pctVals,'%'); });
+    pctVals.forEach((v,i)=>{ rowPct += redCell(v,pctPast,'%',!pastMask[i]); });
     rowPct += `<td>100%</td></tr>`;
     let rowBase = '<tr><td>Base ativa (final)</td>';
     keys.forEach(k=>{
@@ -901,7 +912,7 @@ function scaleActiveSlide(){
   if(!active) return;
   const parent = container.parentElement;
   const availW = parent.clientWidth;
-  const maxH = document.body.classList.contains('fullscreen-mode') ? window.innerHeight*0.82 : window.innerHeight*0.74;
+  const maxH = document.body.classList.contains('fullscreen-mode') ? window.innerHeight*0.90 : window.innerHeight*0.82;
   const scale = Math.min(availW/1280, maxH/720);
   container.style.width = (1280*scale) + 'px';
   container.style.height = (720*scale) + 'px';
@@ -987,8 +998,10 @@ async function exportPPTX(){
         fill: dark ? {color:NAVY} : {color:WHITE},
         border: {type:'solid', color: dark ? '2A3350' : 'E4E8EB', pt:0.5}, autoPage:false, margin: opts.margin!==undefined ? opts.margin : 0.05 });
     }
-    function heatCellPpt(v, vals, mode, suffix=''){
+    function heatCellPpt(v, vals, mode, suffix='', isFuture=false){
       if(v===null) return '-';
+      const valueText = suffix==='%' ? `${v.toFixed(1)}%` : `${v}${suffix}`;
+      if(isFuture) return { text:valueText, options:{ fill:{color:'161D35'}, color:WHITE, fontSize:6.2 } };
       const valid = vals.filter(n=>n!==null && Number.isFinite(n));
       const min = valid.length ? Math.min(...valid) : 0;
       const max = valid.length ? Math.max(...valid) : 0;
@@ -999,7 +1012,6 @@ async function exportPPTX(){
       const idx = Math.max(0, Math.min(levels.length-1, Math.round(t*(levels.length-1))));
       const best = mode==='green' ? (v===max && max>min) : (v===min && max>min);
       const worst = mode==='green' ? (v===min && max>min) : (v===max && max>min);
-      const valueText = suffix==='%' ? `${v.toFixed(1)}%` : `${v}${suffix}`;
       const badge = best ? ' MELHOR' : (worst ? ' PIOR' : '');
       return { text:valueText+badge, options:{ fill:{color:levels[idx]}, bold:best||worst, color:WHITE, fontSize:best||worst?5.8:6.2 } };
     }
@@ -1166,9 +1178,13 @@ async function exportPPTX(){
       let totTech=0, totPmes=0;
       const techVals=[], pmesVals=[], totalVals=[];
       R.anoKeys.forEach(k=>{ const a=R.agg[k]||{tech:0,pmes:0}; techVals.push(a.tech); pmesVals.push(a.pmes); totalVals.push(a.tech+a.pmes); totTech+=a.tech; totPmes+=a.pmes; });
-      const rowTech=['Lucralize Tech'].concat(techVals.map(v=>heatCellPpt(v,techVals,'green'))).concat([String(totTech)]);
-      const rowPmes=['Contabilidade PMEs'].concat(pmesVals.map(v=>heatCellPpt(v,pmesVals,'green'))).concat([String(totPmes)]);
-      const rowTotal=['Total'].concat(totalVals.map(v=>heatCellPpt(v,totalVals,'green'))).concat([String(totTech+totPmes)]);
+      const pastMask = R.anoKeys.map(k=>k<=selectedMonthKey);
+      const techPast = techVals.filter((_,i)=>pastMask[i]);
+      const pmesPast = pmesVals.filter((_,i)=>pastMask[i]);
+      const totalPast = totalVals.filter((_,i)=>pastMask[i]);
+      const rowTech=['Lucralize Tech'].concat(techVals.map((v,i)=>heatCellPpt(v,techPast,'green','',!pastMask[i]))).concat([String(totTech)]);
+      const rowPmes=['Contabilidade PMEs'].concat(pmesVals.map((v,i)=>heatCellPpt(v,pmesPast,'green','',!pastMask[i]))).concat([String(totPmes)]);
+      const rowTotal=['Total'].concat(totalVals.map((v,i)=>heatCellPpt(v,totalPast,'green','',!pastMask[i]))).concat([String(totTech+totPmes)]);
       tableSlide(s, 3.35, [head, rowTech, rowPmes, rowTotal], [1.4].concat(R.anoKeys.map(()=>0.58)).concat([0.7]), { dark:true, fontSize:7.0, margin:0.03 });
     }
 
@@ -1231,10 +1247,15 @@ async function exportPPTX(){
           churnVals.push(baseAnterior ? ((a.tech+a.pmes)/baseAnterior*100) : 0);
         }
       });
-      const rowTech=['Lucralize Tech'].concat(techVals.map(v=>heatCellPpt(v,techVals,'red'))).concat([String(totTech)]);
-      const rowPmes=['Contabilidade PMEs'].concat(pmesVals.map(v=>heatCellPpt(v,pmesVals,'red'))).concat([String(totPmes)]);
-      const rowTotal=['Total'].concat(totaisMes.map(v=>heatCellPpt(v,totaisMes,'red'))).concat([String(totalAno)]);
-      const rowPct=['% do total'].concat(pctVals.map(v=>heatCellPpt(v,pctVals,'red','%'))).concat(['100%']);
+      const pastMask = R.anoKeys.map(k=>k<=selectedMonthKey);
+      const techPast = techVals.filter((_,i)=>pastMask[i]);
+      const pmesPast = pmesVals.filter((_,i)=>pastMask[i]);
+      const totalPast = totaisMes.filter((_,i)=>pastMask[i]);
+      const pctPast = pctVals.filter((_,i)=>pastMask[i]);
+      const rowTech=['Lucralize Tech'].concat(techVals.map((v,i)=>heatCellPpt(v,techPast,'red','',!pastMask[i]))).concat([String(totTech)]);
+      const rowPmes=['Contabilidade PMEs'].concat(pmesVals.map((v,i)=>heatCellPpt(v,pmesPast,'red','',!pastMask[i]))).concat([String(totPmes)]);
+      const rowTotal=['Total'].concat(totaisMes.map((v,i)=>heatCellPpt(v,totalPast,'red','',!pastMask[i]))).concat([String(totalAno)]);
+      const rowPct=['% do total'].concat(pctVals.map((v,i)=>heatCellPpt(v,pctPast,'red','%',!pastMask[i]))).concat(['100%']);
       const rowBase=['Base ativa (final)'];
       R.anoKeys.forEach(k=>rowBase.push(k>selectedMonthKey?'-':String(ativosSnapshot(k).total)));
       rowBase.push(String(R.ativos.total));
@@ -1311,8 +1332,18 @@ document.getElementById('refreshBtn').addEventListener('click', async ()=>{
 });
 document.addEventListener('keydown', e=>{
   if(viewMode!=='single') return;
-  if(e.key==='ArrowRight') goToSlide(slideIndex+1);
-  if(e.key==='ArrowLeft') goToSlide(slideIndex-1);
+  const forwardKeys = ['ArrowRight','PageDown',' ','Spacebar','Enter'];
+  const backKeys = ['ArrowLeft','PageUp','Backspace'];
+  if(forwardKeys.includes(e.key)){
+    e.preventDefault();
+    goToSlide(slideIndex+1);
+    return;
+  }
+  if(backKeys.includes(e.key)){
+    e.preventDefault();
+    goToSlide(slideIndex-1);
+    return;
+  }
   if(e.key==='Escape' && !document.fullscreenElement) backToGrid();
 });
 
