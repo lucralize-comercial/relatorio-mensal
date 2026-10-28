@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026-10-28-v20-sem-liz-estrutura -->
+<!-- build: 2026-10-28-v21-meta -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
@@ -525,7 +525,7 @@ function render(){
         <div class="kpi"><p class="label">GAP total</p><p class="num ${gapAnual>=0?'up':'down'}">${gapAnual>=0?'+':''}${gapAnual}</p></div>
       </div>
       <div class="table-dark">
-        <table><colgroup><col style="width:28%"><col style="width:18%"><col style="width:18%"><col style="width:18%"><col style="width:18%"></colgroup><thead><tr><th>Trimestre</th><th>Meta (faixa 1)</th><th>Base de clientes</th><th>GAP</th><th>% atingido</th></tr></thead><tbody>${metaRows}</tbody></table>
+        <table><colgroup><col style="width:28%"><col style="width:18%"><col style="width:18%"><col style="width:18%"><col style="width:18%"></colgroup><thead><tr><th>Trimestre</th><th>Meta</th><th>Base de clientes</th><th>GAP</th><th>% atingido</th></tr></thead><tbody>${metaRows}</tbody></table>
       </div>
       <div class="note">Trimestres fechados usam a base de clientes real no fechamento (fim de março/junho/setembro); o trimestre em andamento usa o total de hoje.</div>
     </div>
@@ -1102,7 +1102,7 @@ async function exportPPTX(){
     ], 1.95, { labelSize:9, valueSize:21, subSize:8 });
     {
       const headFill = { color: '161D35' };
-      const head = ['Trimestre','Meta (faixa 1)','Base de clientes','GAP','% atingido'].map(t=>({text:t, options:{bold:true, color:TEAL, fill:headFill}}));
+      const head = ['Trimestre','Meta','Base de clientes','GAP','% atingido'].map(t=>({text:t, options:{bold:true, color:TEAL, fill:headFill}}));
       const rows = [head];
       [1,2,3,4].forEach(q=>{
         const status = q<R.trimestre ? ' (fechado)' : (q===R.trimestre ? ' (em andamento)' : '');
