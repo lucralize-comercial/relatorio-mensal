@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026-10-28-v21-meta -->
+<!-- build: 2026-10-28-v27-ganhos-x-entradas -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
@@ -73,6 +73,16 @@
   .meta-number-card.alert{ border-color:rgba(247,86,107,.55); background:rgba(247,86,107,.035); }
   .meta-number-card.goal{ border-color:rgba(79,209,165,.48); background:rgba(79,209,165,.03); }
   .meta-number-value{ font-family:'Manrope',sans-serif; font-size:48px; line-height:1; font-weight:700; color:#fff; margin:0 0 12px; }
+  .meta-prev{ font-family:'Inter',sans-serif; font-size:15px; font-weight:500; color:var(--ink-2); margin-left:12px; white-space:nowrap; }
+  .ge-cards .meta-number-card{ min-height:118px; padding:16px 22px; }
+  .ge-cards .meta-number-value{ margin-bottom:8px; }
+  .ge-row{ display:grid; grid-template-columns:1.9fr 1fr; gap:16px; margin-top:16px; }
+  .ge-box{ border:1px solid var(--line); border-radius:12px; padding:14px 18px; background:rgba(255,255,255,.018); }
+  .ge-title{ font-size:13px; color:var(--ink-2); margin:0 0 6px; display:flex; justify-content:space-between; }
+  .ge-leg i{ display:inline-block; width:10px; height:10px; border-radius:2px; margin:0 5px 0 12px; }
+  .ge-line{ display:flex; justify-content:space-between; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--line); font-size:15px; }
+  .ge-line:last-of-type{ border-bottom:0; }
+  .ge-line b{ font-family:'Manrope',sans-serif; font-size:26px; }
   .meta-number-value.danger{ color:var(--danger); }
   .meta-number-value.success{ color:var(--success); }
   .meta-number-label{ font-family:'Manrope',sans-serif; font-size:18px; line-height:1.2; font-weight:600; color:var(--teal); margin:0 0 7px; }
@@ -429,6 +439,18 @@ function render(){
   const faltamMeta = Math.max(750 - ativos.total, 0);
   const porMesNecessario = mesesRestantes>0 ? Math.ceil(faltamMeta / mesesRestantes) : 0;
   const ritmoAtual = Math.round(saldoAcumuladoAno / (monthIdx+1));
+  // Referência do mês anterior para o slide "Meta 2026 em números"
+  const prevMeta = (ativosPrev && prevKey && prevKey.startsWith(y)) ? (()=>{
+    const faltam = Math.max(750 - ativosPrev.total, 0);
+    const meses = mesesRestantes + 1;
+    return {
+      label: MESES[parseInt(prevKey.slice(5),10)-1].slice(0,3),
+      base: ativosPrev.total,
+      faltam,
+      porMes: Math.ceil(faltam / meses),
+      ritmo: monthIdx>0 ? Math.round((saldoAcumuladoAno - saldo) / monthIdx) : null
+    };
+  })() : null;
   const gapTrimestre = ativos.total - META_TRIMESTRE[trimestre];
   const gapAnual = ativos.total - 750;
 
@@ -439,6 +461,14 @@ function render(){
   allKeys.filter(k=>k.startsWith(y) && k<=selectedMonthKey).forEach(k=>{ saidasAno += agg[k].saidas; });
   const churnTaxaAno = ativosInicioAno.total ? (saidasAno / ativosInicioAno.total * 100) : 0;
 
+  // Contratos ganhos (Agendor) x entradas na base (SharePoint), de janeiro até o mês selecionado
+  const ge = allKeys.filter(k=>k.startsWith(y) && k<=selectedMonthKey).map(k=>({
+    k, mes: MESES[parseInt(k.slice(5),10)-1].slice(0,3), g: funilLeadsNoMes(k).fechamentos, e: agg[k].entradas
+  }));
+  const geCur = ge.length ? ge[ge.length-1] : {g:0,e:0};
+  const gePrev = ge.length>1 ? ge[ge.length-2] : null;
+  const geAcum = { g: ge.reduce((s,x)=>s+x.g,0), e: ge.reduce((s,x)=>s+x.e,0) };
+
   const prevLabel = prevKey ? MESES[parseInt(prevKey.slice(5),10)-1] : null;
 
   const semestreKeysForExport = allKeys.filter(k=>k.startsWith(y)).slice(-6);
@@ -446,8 +476,8 @@ function render(){
 
   REPORT = {
     y, monthIdx, trimestre, cur, prev, prevKey, prevLabel, saldo,
-    ativos, ativosPrev, funil, funilAno, saldoAcumuladoAno,
-    ativosInicioAno, mesesRestantes, faltamMeta, porMesNecessario, ritmoAtual, gapTrimestre, gapAnual,
+    ge, geCur, gePrev, geAcum, ativos, ativosPrev, funil, funilAno, saldoAcumuladoAno,
+    ativosInicioAno, prevMeta, mesesRestantes, faltamMeta, porMesNecessario, ritmoAtual, gapTrimestre, gapAnual,
     suspensos, emCancelamento, saidasAno, churnTaxaAno,
     semestreKeys: semestreKeysForExport,
     anoKeys: anoKeysForExport,
@@ -537,6 +567,7 @@ function render(){
     const periodoNecessario = mesesRestantes > 0
       ? `Saldo médio necessário de ${proxMesMeta} a dezembro`
       : 'Último mês do ciclo anual';
+    const pv = (v,sign)=> prevMeta && v!==null && v!==undefined ? `<span class="meta-prev">(${sign&&v>=0?'+':''}${v} ${prevMeta.label})</span>` : '';
     slidesHtml.push(`
       <div class="eyebrow">Slide 4</div>
       <h1>Meta 2026 em números</h1>
@@ -549,12 +580,12 @@ function render(){
             <p class="meta-number-sub">Ponto de partida do ano</p>
           </div>
           <div class="meta-number-card">
-            <p class="meta-number-value">${ativos.total}</p>
+            <p class="meta-number-value">${ativos.total}${pv(prevMeta&&prevMeta.base)}</p>
             <p class="meta-number-label">${MESES[monthIdx]}</p>
             <p class="meta-number-sub">Base atual</p>
           </div>
           <div class="meta-number-card ${faltamMeta>0?'alert':'goal'}">
-            <p class="meta-number-value ${faltamMeta>0?'danger':'success'}">${faltamMeta}</p>
+            <p class="meta-number-value ${faltamMeta>0?'danger':'success'}">${faltamMeta}${pv(prevMeta&&prevMeta.faltam)}</p>
             <p class="meta-number-label">Faltam</p>
             <p class="meta-number-sub">Clientes para alcançar a meta</p>
           </div>
@@ -564,12 +595,12 @@ function render(){
             <p class="meta-number-sub">Clientes ativos até o fim de ${y}</p>
           </div>
           <div class="meta-number-card goal">
-            <p class="meta-number-value success">+${porMesNecessario}</p>
+            <p class="meta-number-value success">+${porMesNecessario}${prevMeta?`<span class="meta-prev">(+${prevMeta.porMes} ${prevMeta.label})</span>`:''}</p>
             <p class="meta-number-label">Por mês</p>
             <p class="meta-number-sub">${periodoNecessario}</p>
           </div>
           <div class="meta-number-card">
-            <p class="meta-number-value ${ritmoAtual>=0?'success':'danger'}">${ritmoAtual>=0?'+':''}${ritmoAtual}</p>
+            <p class="meta-number-value ${ritmoAtual>=0?'success':'danger'}">${ritmoAtual>=0?'+':''}${ritmoAtual}${pv(prevMeta&&prevMeta.ritmo,true)}</p>
             <p class="meta-number-label">Saldo líquido médio/mês</p>
             <p class="meta-number-sub">Crescimento médio da base por mês no ano</p>
           </div>
@@ -858,11 +889,67 @@ function render(){
     </div>
   `);
 
-  // Slide 9 — próximos passos (texto livre, editável à mão, salvo por mês no navegador)
+  // Slide 9 — contratos ganhos (Agendor) x entrada na base (SharePoint)
+  {
+    const pend = geCur.g - geCur.e;
+    const pendPrev = gePrev ? gePrev.g - gePrev.e : null;
+    const pl = gePrev ? gePrev.mes : '';
+    const refTxt = (v, sign)=> gePrev ? `<span class="meta-prev">(${sign&&v>0?'+':''}${v} ${pl})</span>` : '';
+    const n = ge.length, bw = 22, step = Math.min(68, 660/Math.max(n,1));
+    const maxV = Math.max(1, ...ge.map(x=>Math.max(x.g,x.e)));
+    const hh = v => v/maxV*118;
+    const bars = ge.map((x,i)=>{
+      const X = 20 + i*step, h1 = hh(x.g), h2 = hh(x.e), d = x.g - x.e;
+      return `<rect x="${X}" y="${150-h1}" width="${bw}" height="${h1}" rx="3" fill="#4FD1A5"/><rect x="${X+bw+3}" y="${150-h2}" width="${bw}" height="${h2}" rx="3" fill="#8fd8e0"/>`
+        + `<text x="${X+bw/2}" y="${144-h1}" fill="#fff">${x.g}</text><text x="${X+bw+3+bw/2}" y="${144-h2}" fill="#fff">${x.e}</text>`
+        + `<text x="${X+bw+1}" y="170">${x.mes}</text>`
+        + `<text x="${X+bw+1}" y="192" fill="${d>0?'#F7566B':'#4FD1A5'}" font-weight="700">${d>0?'+':''}${d}</text>`;
+    }).join('');
+    const acumDif = geAcum.g - geAcum.e;
+    slidesHtml.push(`
+      <div class="eyebrow">Slide 9</div>
+      <h1>Contratos ganhos x entrada na base</h1>
+      <p class="lede">O que fechamos no Agendor e o que já virou cliente ativo no SharePoint.</p>
+      <div class="slide-body">
+        <div class="meta-number-grid ge-cards">
+          <div class="meta-number-card goal">
+            <p class="meta-number-value success">${geCur.g}${refTxt(gePrev&&gePrev.g)}</p>
+            <p class="meta-number-label">Contratos ganhos</p>
+            <p class="meta-number-sub">Fechados no Agendor em ${MESES[monthIdx].toLowerCase()}</p>
+          </div>
+          <div class="meta-number-card">
+            <p class="meta-number-value">${geCur.e}${refTxt(gePrev&&gePrev.e)}</p>
+            <p class="meta-number-label">Entraram na base</p>
+            <p class="meta-number-sub">Clientes novos no SharePoint em ${MESES[monthIdx].toLowerCase()}</p>
+          </div>
+          <div class="meta-number-card ${pend>0?'alert':'goal'}">
+            <p class="meta-number-value ${pend>0?'danger':'success'}">${pend>0?pend:0}${gePrev?`<span class="meta-prev">(${pendPrev>0?pendPrev:0} ${pl})</span>`:''}</p>
+            <p class="meta-number-label">Pendentes</p>
+            <p class="meta-number-sub">Ganhos sem entrada na base</p>
+          </div>
+        </div>
+        <div class="ge-row">
+          <div class="ge-box">
+            <p class="ge-title"><span>Mês a mês em ${y}</span><span class="ge-leg"><i style="background:#4FD1A5"></i>Ganhos<i style="background:#8fd8e0"></i>Entradas</span></p>
+            <svg width="100%" height="205" viewBox="0 0 700 205"><g font-size="11" fill="#aab4c8" text-anchor="middle">${bars}</g><text x="0" y="192" font-size="10" fill="#7d86a0">dif.</text></svg>
+          </div>
+          <div class="ge-box">
+            <p class="ge-title"><span>Acumulado em ${y}</span></p>
+            <div class="ge-line"><span>Ganhos</span><b style="color:var(--success)">${geAcum.g}</b></div>
+            <div class="ge-line"><span>Entradas na base</span><b>${geAcum.e}</b></div>
+            <div class="ge-line"><span>Diferença</span><b style="color:${acumDif>0?'var(--danger)':'var(--success)'}">${acumDif>0?'+':''}${acumDif}</b></div>
+          </div>
+        </div>
+        <p class="note" style="margin-top:12px">Diferença = ganhos no Agendor (data de fechamento) menos entradas na base (SharePoint). As entradas incluem clientes que não vieram do funil comercial.</p>
+      </div>
+    `);
+  }
+
+  // Slide 10 — próximos passos (texto livre, editável à mão, salvo por mês no navegador)
   const nextStepsKey = `nextSteps_${selectedMonthKey}`;
   const savedSteps = localStorage.getItem(nextStepsKey) || '';
   slidesHtml.push(`
-    <div class="eyebrow">Slide 9</div>
+    <div class="eyebrow">Slide 10</div>
     <h1>Próximos passos</h1>
     <p class="lede">O que muda na estratégia com base nesses números.</p>
     <div class="slide-body">
@@ -870,7 +957,7 @@ function render(){
     </div>
   `);
 
-  // Slide 10 — obrigado
+  // Slide 11 — obrigado
   slidesHtml.push(`
     <div class="eyebrow">COMERCIAL</div>
     <h1>Obrigado</h1>
@@ -1124,11 +1211,11 @@ async function exportPPTX(){
         : 'Último mês do ciclo anual';
       const cards = [
         { value:String(R.ativosInicioAno.total), label:`Dezembro ${R.y-1}`, sub:'Ponto de partida do ano', valueColor:WHITE, line:'2A3350', fill:'11192E' },
-        { value:String(R.ativos.total), label:MESES[R.monthIdx], sub:'Base atual', valueColor:WHITE, line:'2A3350', fill:'11192E' },
-        { value:String(R.faltamMeta), label:'Faltam', sub:'Clientes para alcançar a meta', valueColor:R.faltamMeta>0?DANGER:SUCCESS, line:R.faltamMeta>0?DANGER:SUCCESS, fill:R.faltamMeta>0?'211420':'11221D' },
+        { value:String(R.ativos.total), prev:R.prevMeta?`(${R.prevMeta.base} ${R.prevMeta.label})`:'', label:MESES[R.monthIdx], sub:'Base atual', valueColor:WHITE, line:'2A3350', fill:'11192E' },
+        { value:String(R.faltamMeta), prev:R.prevMeta?`(${R.prevMeta.faltam} ${R.prevMeta.label})`:'', label:'Faltam', sub:'Clientes para alcançar a meta', valueColor:R.faltamMeta>0?DANGER:SUCCESS, line:R.faltamMeta>0?DANGER:SUCCESS, fill:R.faltamMeta>0?'211420':'11221D' },
         { value:'750', label:'Meta dezembro', sub:`Clientes ativos até o fim de ${R.y}`, valueColor:WHITE, line:'2A3350', fill:'11192E' },
-        { value:`+${R.porMesNecessario}`, label:'Por mês', sub:periodoNecessario, valueColor:SUCCESS, line:SUCCESS, fill:'11221D' },
-        { value:`${R.ritmoAtual>=0?'+':''}${R.ritmoAtual}`, label:'Saldo líquido médio/mês', sub:'Crescimento médio da base por mês no ano', valueColor:R.ritmoAtual>=0?SUCCESS:DANGER, line:'2A3350', fill:'11192E' },
+        { value:`+${R.porMesNecessario}`, prev:R.prevMeta?`(+${R.prevMeta.porMes} ${R.prevMeta.label})`:'', label:'Por mês', sub:periodoNecessario, valueColor:SUCCESS, line:SUCCESS, fill:'11221D' },
+        { value:`${R.ritmoAtual>=0?'+':''}${R.ritmoAtual}`, prev:(R.prevMeta&&R.prevMeta.ritmo!==null)?`(${R.prevMeta.ritmo>=0?'+':''}${R.prevMeta.ritmo} ${R.prevMeta.label})`:'', label:'Saldo líquido médio/mês', sub:'Crescimento médio da base por mês no ano', valueColor:R.ritmoAtual>=0?SUCCESS:DANGER, line:'2A3350', fill:'11192E' },
       ];
       const cardW=2.82, cardH=1.58, gapX=0.27, gapY=0.22, startX=0.5, startY=1.72;
       cards.forEach((c,i)=>{
@@ -1136,6 +1223,7 @@ async function exportPPTX(){
         const x=startX+col*(cardW+gapX), y=startY+row*(cardH+gapY);
         s.addShape('roundRect',{x,y,w:cardW,h:cardH,rectRadius:0.06,fill:{color:c.fill,transparency:6},line:{color:c.line,width:0.7}});
         s.addText(c.value,{x:x+0.22,y:y+0.22,w:cardW-0.44,h:0.58,fontSize:27,bold:true,color:c.valueColor,fontFace:'Arial',margin:0});
+        if(c.prev) s.addText(c.prev,{x:x+1.25,y:y+0.22,w:cardW-1.47,h:0.58,fontSize:9,color:MUTED,fontFace:'Arial',margin:0,valign:'middle'});
         s.addText(c.label,{x:x+0.22,y:y+0.84,w:cardW-0.44,h:0.28,fontSize:11.5,bold:true,color:TEAL,fontFace:'Arial',margin:0});
         s.addText(c.sub,{x:x+0.22,y:y+1.16,w:cardW-0.44,h:0.30,fontSize:8.2,color:MUTED,fontFace:'Arial',margin:0,breakLine:false});
       });
@@ -1301,9 +1389,43 @@ async function exportPPTX(){
       s.addText(`Taxa de churn no ano = saídas de janeiro a ${MESES[R.monthIdx].toLowerCase()} ÷ base de dezembro/${R.y-1} (${R.saidasAno} ÷ ${R.ativosInicioAno.total} = ${R.churnTaxaAno.toFixed(1)}%).`, { x:0.5, y:5.23, w:9, h:0.18, fontSize:7.1, color:MUTED, fontFace:'Arial', margin:0 });
     }
 
-    // Slide 9 — próximos passos (texto livre, salvo no navegador por mês)
+    // Slide 9 — contratos ganhos (Agendor) x entrada na base (SharePoint)
     s = baseSlide();
-    header(s, 'Slide 9', 'Próximos passos', 'O que muda na estratégia com base nesses números.');
+    header(s, 'Slide 9', 'Contratos ganhos x entrada na base', 'O que fechamos no Agendor e o que já virou cliente ativo no SharePoint.');
+    {
+      const pend = R.geCur.g - R.geCur.e;
+      const pendPrev = R.gePrev ? R.gePrev.g - R.gePrev.e : null;
+      const pl = R.gePrev ? R.gePrev.mes : '';
+      const mes = MESES[R.monthIdx].toLowerCase();
+      const cards = [
+        { value:String(R.geCur.g), prev:R.gePrev?`(${R.gePrev.g} ${pl})`:'', label:'Contratos ganhos', sub:`Fechados no Agendor em ${mes}`, valueColor:SUCCESS, line:SUCCESS, fill:'11221D' },
+        { value:String(R.geCur.e), prev:R.gePrev?`(${R.gePrev.e} ${pl})`:'', label:'Entraram na base', sub:`Clientes novos no SharePoint em ${mes}`, valueColor:WHITE, line:'2A3350', fill:'11192E' },
+        { value:String(Math.max(pend,0)), prev:R.gePrev?`(${Math.max(pendPrev,0)} ${pl})`:'', label:'Pendentes', sub:'Ganhos sem entrada na base (diferença do mês)', valueColor:pend>0?DANGER:SUCCESS, line:pend>0?DANGER:SUCCESS, fill:pend>0?'211420':'11221D' },
+      ];
+      const cardW=2.82, cardH=1.15, gapX=0.27, startX=0.5, startY=1.72;
+      cards.forEach((cd,i)=>{
+        const x=startX+i*(cardW+gapX), y=startY;
+        s.addShape('roundRect',{x,y,w:cardW,h:cardH,rectRadius:0.06,fill:{color:cd.fill,transparency:6},line:{color:cd.line,width:0.7}});
+        s.addText(cd.value,{x:x+0.22,y:y+0.14,w:0.9,h:0.45,fontSize:24,bold:true,color:cd.valueColor,fontFace:'Arial',margin:0});
+        if(cd.prev) s.addText(cd.prev,{x:x+1.05,y:y+0.14,w:cardW-1.27,h:0.45,fontSize:9,color:MUTED,fontFace:'Arial',margin:0,valign:'middle'});
+        s.addText(cd.label,{x:x+0.22,y:y+0.62,w:cardW-0.44,h:0.22,fontSize:11,bold:true,color:TEAL,fontFace:'Arial',margin:0});
+        s.addText(cd.sub,{x:x+0.22,y:y+0.85,w:cardW-0.44,h:0.22,fontSize:7.5,color:MUTED,fontFace:'Arial',margin:0});
+      });
+      const headFill = { color:'161D35' };
+      const hd = [{text:'', options:{fill:headFill}}].concat(R.ge.map(x=>({text:x.mes, options:{bold:true, color:TEAL, fill:headFill}}))).concat([{text:'Ano', options:{bold:true, color:TEAL, fill:headFill}}]);
+      const rowG = ['Ganhos (Agendor)'].concat(R.ge.map(x=>String(x.g))).concat([String(R.geAcum.g)]);
+      const rowE = ['Entradas (SharePoint)'].concat(R.ge.map(x=>String(x.e))).concat([String(R.geAcum.e)]);
+      const dif = x => (x>0?'+':'')+x;
+      const rowD = ['Diferença'].concat(R.ge.map(x=>({text:dif(x.g-x.e), options:{bold:true, color:(x.g-x.e)>0?DANGER:SUCCESS}}))).concat([{text:dif(R.geAcum.g-R.geAcum.e), options:{bold:true, color:(R.geAcum.g-R.geAcum.e)>0?DANGER:SUCCESS}}]);
+      const n = R.ge.length;
+      const wMonth = Math.min(0.62, (9-1.7-0.7)/Math.max(n,1));
+      tableSlide(s, 3.2, [hd,rowG,rowE,rowD], [1.7].concat(R.ge.map(()=>wMonth)).concat([0.7]), { dark:true, fontSize:8, margin:0.04 });
+      s.addText('Diferença = ganhos no Agendor (data de fechamento) menos entradas na base (SharePoint). As entradas incluem clientes que não vieram do funil comercial.', { x:0.5, y:5.1, w:9, h:0.3, fontSize:7.1, color:MUTED, fontFace:'Arial', margin:0 });
+    }
+
+    // Slide 10 — próximos passos (texto livre, salvo no navegador por mês)
+    s = baseSlide();
+    header(s, 'Slide 10', 'Próximos passos', 'O que muda na estratégia com base nesses números.');
     {
       const saved = (localStorage.getItem(`nextSteps_${selectedMonthKey}`) || '').trim();
       const lines = saved ? saved.split('\n').filter(Boolean) : ['Nenhuma ação registrada ainda para este mês.'];
@@ -1312,7 +1434,7 @@ async function exportPPTX(){
       });
     }
 
-    // Slide 10 — obrigado
+    // Slide 11 — obrigado
     s = baseSlide();
     s.addText('COMERCIAL', { x:0.5, y:2.2, w:9, h:0.3, fontSize:11, color:MUTED, fontFace:'Arial' });
     s.addText('Obrigado', { x:0.5, y:2.5, w:9, h:0.7, fontSize:34, color:WHITE, bold:true, fontFace:'Arial' });
